@@ -38,6 +38,7 @@ class Toolkit80211:
             threading.Thread.__init__(self)
             threading.Thread.daemon = True
             self.iface = interface
+            self.pause = False
             # dwell for 3 time slices on 1 6 11
             # default is 3/10 of a second
             # got the lists from kismet config file
@@ -61,12 +62,40 @@ class Toolkit80211:
                 except PyLorcon2.Lorcon2Exception:
                     continue
                 self.hopList.append(ch)
+        
+        def pause(self):
+            """
+            Pause the channel hopping
+            """
+            self.pause = True
+
+        def unpause(self):
+            """
+            Unpause the channel hopping
+            """
+            self.pause = False
+        
+        def setchannel(self, channel):
+            """
+            Set a single channel
+            expects channel to be an int
+            returns -1 if channel isnt supported
+            #should raise an expection if this is the case
+            """
+            if channel in self.hopList:
+                self.iface.set_channel(channel)
+                return 0
+            else:
+                return -1
 
         def hop(self, dwell=.4):
             """
             Hop channels
             """
             while True:
+                # hopping is paused though loop still runs
+                if self.pause == True:
+                    continue
                 for ch in self.hopList:
                     try:
                         self.iface.set_channel(ch)
