@@ -144,8 +144,8 @@ class Toolkit80211:
             # this may not work for WDS, though ignoring wds for now
             # key = mac, value=assoication
             self.clients = {}
-            # data about a given client
-            self.clientData = {}
+            # probes from a given client
+            self.clientProbes = {}
         
         def updateClient(self, frame):
             """
@@ -207,8 +207,16 @@ class Toolkit80211:
                 # data frames
                 elif frame["key"] in ["\x08", "\xC8","\x40"]:
                     self.updateClient(frame)
-                elif frame["key"] in ["\x40"]:
-                    self.clientData['src'] = frame
+                if frame["key"] in ["\x40"]:
+                    src = frame["src"]
+                    essid = frame["essid"]
+                    if frame["src"] in self.clientProbes.keys():
+                        if essid != '':
+                            self.clientProbes[src][essid] = ""
+                    else:
+                        # abuse dict behaivor to remove duplicates
+                        if essid != '':
+                            self.clientProbes[src] = {essid:""}
 
         def run(self):
             """
@@ -253,6 +261,7 @@ if __name__ == "__main__":
                 print "%s %s" %(apbssid, lbss[bssid])
             print "\nClients"
             lclient = y.clients
+            probes = y.clientProbes
             for client in lclient.keys():
                 pclient = ppmac(client)
                 plclient = lclient[client]
