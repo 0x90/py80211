@@ -29,8 +29,7 @@ class Toolkit80211:
         """
         Close card context
         """
-        for ctx in self.moniface.values():
-            ctx.close()
+        self.moniface["ctx"].close()
 
     class ChannelHop(threading.Thread):
         """
