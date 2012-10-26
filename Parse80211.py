@@ -254,14 +254,15 @@ class Parse80211:
         src, dst, bssid, probe request
         """
         # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[20]) & 3
+        dsbits = ord(data[19]) & 3
         dst = data[22:22 + 6]  # destination addr 6 bytes
         src = data[28:28 + 6]  # source addr 6 bytes
         bssid = data[34:34 + 6]  # bssid addr 6 bytes
         # parse the IE tags
         # possible bug, no fixed 12 byte paramaters before ie tags?
-        self.IE.parseIE(data[42:])
-        if "key" not in self.IE.tagdata.keys():
+        # these seem to have it...
+        self.IE.parseIE(data[54:])
+        if "ssid" not in self.IE.tagdata.keys():
             essid = ""
         else:
             essid = self.IE.tagdata["ssid"]
@@ -279,14 +280,14 @@ class Parse80211:
         src, dst, bssid, probe request
         """
         # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[20]) & 3
+        dsbits = ord(data[19]) & 3
         dst = data[22:22 + 6]  # destination addr 6 bytes
         src = data[28:28 + 6]  # source addr 6 bytes
         bssid = data[34:34 + 6]  # bssid addr 6 bytes
         # parse the IE tags
         # possible bug, no fixed 12 byte paramaters before ie tags?
         self.IE.parseIE(data[42:])
-        if "key" not in self.IE.tagdata.keys():
+        if "ssid" not in self.IE.tagdata.keys():
             essid = ""
         else:
             essid = self.IE.tagdata["ssid"]
@@ -324,7 +325,7 @@ if __name__ == "__main__":
     x = Parse80211(sys.argv[1])
     while True:
         frame = x.parseFrame(x.getFrame())
-        if frame != None:
-            if frame["key"] == "\x20":
-                print frame
-        #print x.parseFrame(x.getFrame())
+        #if frame != None:
+        #    if frame["key"] == "\x20":
+        #        print frame
+        print x.parseFrame(x.getFrame())
