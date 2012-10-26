@@ -160,17 +160,17 @@ class Toolkit80211:
                 self.clients[src] = "Not Assoicated"
             elif ds == 1:
                 # station to ap
-                self.clients[src] = dst
+                self.clients[src] = bssid
                 return
             elif ds == 2:
                 # ap to station
                 # check for wired broadcasts
                 if dst == '\xff\xff\xff\xff\xff\xff':
                     #were doing with a wired broadcast
-                    #make sure we showe its connected to an ap
+                    #make sure we show its connected to an ap
                     self.clients[src] = bssid
                 else:
-                    self.clients[dst] = src
+                    self.clients[dst] = bssid
                 return
             elif ds == 3:
                 # wds, were ignoring this for now
