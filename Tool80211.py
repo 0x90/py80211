@@ -249,6 +249,8 @@ if __name__ == "__main__":
             lclient = y.clients
             for client in lclient.keys():
                 pclient = ppmac(client)
+                if pclient == 'ff:ff:ff:ff:ff:ff':
+                    pdb.set_trace()
                 plclient = lclient[client]
                 if plclient != "Not Assoicated":
                     plclient = ppmac(plclient)
