@@ -231,8 +231,8 @@ class Parse80211:
         # do a bit bitwise & to check which of the last 2 bits are set
         dsbits = ord(data[19]) & 3
         dst = data[22:22 + 6]  # destination addr 6 bytes
-        src = data[34:34 + 6]  # source addr 6 bytes
         bssid = data[28:28 + 6]  # bssid addr 6 bytes
+        src = data[34:34 + 6]  # source addr 6 bytes
         return {"key":"\x08", "src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
     def qos(self, data):
