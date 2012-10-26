@@ -229,7 +229,7 @@ class Parse80211:
         # fix bug in case we dont get radio tap headers
         # need to parse ds flags
         # do a bit bitwise & to check which of the last 2 bits are set
-        dsbits = ord(data[20]) & 3
+        dsbits = ord(data[19]) & 3
         dst = data[22:22 + 6]  # destination addr 6 bytes
         src = data[34:34 + 6]  # source addr 6 bytes
         bssid = data[28:28 + 6]  # bssid addr 6 bytes
@@ -241,7 +241,7 @@ class Parse80211:
         subtype = \xC8
         """
         # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[20]) & 3
+        dsbits = ord(data[19]) & 3
         dst = data[22:22 + 6]  # destination addr 6 bytes
         src = data[34:34 + 6]  # source addr 6 bytes
         bssid = data[28:28 + 6]  # bssid addr 6 bytes
