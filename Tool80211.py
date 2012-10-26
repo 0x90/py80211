@@ -212,6 +212,22 @@ class Toolkit80211:
             self.hopper = Toolkit80211.ChannelHop(self.ctx)
             self.hopper.start()
             self.parse()
+    
+    class RandomBits:
+        """
+        Class to hold all the random functions 
+        to do one off things
+        """
+        @staticmethod
+        def pformatMac(hexbytes):
+            """
+            Take in hex bytes and pretty format them 
+            to the screen in the xx:xx:xx:xx:xx:xx format
+            """
+            mac = []
+            for byte in hexbytes:
+                mac.append(byte.encode('hex'))
+            return ':'.join(mac)
 
 if __name__ == "__main__":
     try:
@@ -219,6 +235,7 @@ if __name__ == "__main__":
         #will only work with one
         y = x.Airview(x.moniface)
         y.start()
+        ppmac = Toolkit80211.RandomBits.pformatMac
         while True:
             time.sleep(2)
             os.system("clear")
@@ -226,7 +243,8 @@ if __name__ == "__main__":
             print "Channel %i" %(y.channel)
             print "Access point"
             for bssid in lbss.keys():
-                print "%s %s" %(bssid.encode('hex'), lbss[bssid])
+                apbssid = ppmac(bssid)
+                print "%s %s" %(apbssid, lbss[bssid])
             print "\nClients"
             lclient = y.clients
             for client in lclient.keys():
