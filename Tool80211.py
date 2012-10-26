@@ -25,6 +25,13 @@ class Toolkit80211:
         self.moniface["ctx"].open_injmon()
         self.moniface["name"] = self.moniface["ctx"].get_vap()
 
+    def exit(self):
+        """
+        Close card context
+        """
+        for ctx in self.moniface.values():
+            ctx.close()
+
     class ChannelHop(threading.Thread):
         """
         Control a card and cause it to hop channels
@@ -259,7 +266,7 @@ if __name__ == "__main__":
         #will only work with one
         y = x.Airview(x.moniface)
         y.start()
-        ppmac = Toolkit80211.RandomBits.pformatMac
+        ppmac = x.RandomBits.pformatMac
         while True:
             time.sleep(2)
             os.system("clear")
@@ -284,4 +291,5 @@ if __name__ == "__main__":
                     print "%s %s" %(pclient, plclient) 
     except KeyboardInterrupt:
         print "\nbye"
+        x.exit()
         sys.exit(0)
