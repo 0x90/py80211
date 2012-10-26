@@ -172,26 +172,27 @@ class Parse80211:
         # bytes are in little endian hex
         # doing this based off bytes is wrong... it works mostly however subtype is in bits not bytes and this may break in the future, should run bitwise on the byte
         self.parser = {
-            "\x00": self.placedef,  # assoication request 
-            "\x10": self.placedef,  # assoication responce
-            "\x20": self.placedef,  # reassoication request
-            "\x30": self.placedef,  # reassoication response
-            "\x40": self.probeReq,  # probe request
-            "\x50": self.placedef,  # probe response
-            "\x80": self.beacon,    # Beacon
-            "\x90": self.placedef,  # ATIM
-            "\xA0": self.placedef,  # disassoication
-            "\xB0": self.placedef,  # Authenticaiton
-            "\xC0": self.placedef,  # Deauthentication
-            "\xC8": self.qos,       # qos
-            "\x08": self.data,      # data
+            "\x00": self.placedef,   # assoication request 
+            "\x10": self.placedef,   # assoication responce
+            "\x20": self.placedef,   # reassoication request
+            "\x30": self.placedef,   # reassoication response
+            "\x40": self.probeReq,   # probe request
+            "\x50": self.probeResp,  # probe response
+            "\x80": self.beacon,     # Beacon
+            "\x90": self.placedef,   # ATIM
+            "\xA0": self.placedef,   # disassoication
+            "\xB0": self.placedef,   # Authenticaiton
+            "\xC0": self.placedef,   # Deauthentication
+            "\xC8": self.qos,        # qos
+            "\x08": self.data,       # data
         }
         self.lp = pcap.pcapObject()
         # check what these numbers mean
         self.lp.open_live(dev, 1600, 0 ,100)
     
     def placedef(self, data):
-        print "No parser for subtype"
+        print data[18].encode('hex')
+        print "No parser for subtype\n"
 
     def getFrame(self):
         """
@@ -246,6 +247,31 @@ class Parse80211:
         bssid = data[28:28 + 6]  # bssid addr 6 bytes
         return {"key":"\xC8", "src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
+    def probeResp(self, data):
+        """
+        Parse out probe response
+        return a dict of with keys of
+        src, dst, bssid, probe request
+        """
+        # fix bug in case we dont get radio tap headers
+        dsbits = ord(data[20]) & 3
+        dst = data[22:22 + 6]  # destination addr 6 bytes
+        src = data[28:28 + 6]  # source addr 6 bytes
+        bssid = data[34:34 + 6]  # bssid addr 6 bytes
+        # parse the IE tags
+        # possible bug, no fixed 12 byte paramaters before ie tags?
+        self.IE.parseIE(data[42:])
+        if "key" not in self.IE.tagdata.keys():
+            essid = ""
+        else:
+            essid = self.IE.tagdata["ssid"]
+        if "channel" not in self.IE.tagdata.keys():
+            channel = ""
+        else:
+            channel = self.IE.tagdata["channel"]
+        return {"key":"\x50", "bssid":bssid, "essid":essid, "src":src, 
+            "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
+    
     def probeReq(self, data):
         """
         Parse out probe requests
@@ -268,7 +294,7 @@ class Parse80211:
             channel = ""
         else:
             channel = self.IE.tagdata["channel"]
-        return {"key":"\x50", "bssid":bssid, "essid":essid, "src":src, 
+        return {"key":"\x40", "bssid":bssid, "essid":essid, "src":src, 
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
     
     def beacon(self, data):
@@ -299,6 +325,6 @@ if __name__ == "__main__":
     while True:
         frame = x.parseFrame(x.getFrame())
         if frame != None:
-            if frame["key"] == "\x50":
+            if frame["key"] == "\x20":
                 print frame
         #print x.parseFrame(x.getFrame())
