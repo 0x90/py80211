@@ -205,9 +205,9 @@ class Toolkit80211:
                     self.apData[bssid] = frame
                     continue
                 # data frames
-                elif frame["key"] in ["\x08", "\xC8","\x50"]:
+                elif frame["key"] in ["\x08", "\xC8","\x40"]:
                     self.updateClient(frame)
-                elif frame["key"] in ["\x50"]:
+                elif frame["key"] in ["\x40"]:
                     self.clientData['src'] = frame
 
         def run(self):
