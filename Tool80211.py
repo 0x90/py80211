@@ -164,7 +164,13 @@ class Toolkit80211:
                 return
             elif ds == 2:
                 # ap to station
-                self.clients[dst] = src
+                # check for wired broadcasts
+                if dst == '\xff\xff\xff\xff\xff\xff':
+                    #were doing with a wired broadcast
+                    #make sure we showe its connected to an ap
+                    self.clients[src] = bssid
+                else:
+                    self.clients[dst] = src
                 return
             elif ds == 3:
                 # wds, were ignoring this for now
@@ -249,12 +255,10 @@ if __name__ == "__main__":
             lclient = y.clients
             for client in lclient.keys():
                 pclient = ppmac(client)
-                if pclient == 'ff:ff:ff:ff:ff:ff':
-                    pdb.set_trace()
                 plclient = lclient[client]
                 if plclient != "Not Assoicated":
                     plclient = ppmac(plclient)
-                print "%s %s" %(pclient, lclient[client]) 
+                print "%s %s" %(pclient, plclient) 
     except KeyboardInterrupt:
         print "\nbye"
         sys.exit(0)
