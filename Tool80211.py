@@ -217,6 +217,16 @@ class Toolkit80211:
                         # abuse dict behaivor to remove duplicates
                         if essid != '':
                             self.clientProbes[src] = {essid:""}
+        
+        def getProbes(self, cmac):
+            """
+            return a list of probe requests 
+            for a given client
+            """
+            if cmac in self.clientProbes:
+                return self.clientProbes[client].keys()
+            else:
+                return None
 
         def run(self):
             """
@@ -267,7 +277,11 @@ if __name__ == "__main__":
                 plclient = lclient[client]
                 if plclient != "Not Assoicated":
                     plclient = ppmac(plclient)
-                print "%s %s" %(pclient, plclient) 
+                probes = y.getProbes(client)
+                if probes != None:
+                    print "%s %s %s" %(pclient, plclient, ','.join(probes))
+                else:
+                    print "%s %s" %(pclient, plclient) 
     except KeyboardInterrupt:
         print "\nbye"
         sys.exit(0)
