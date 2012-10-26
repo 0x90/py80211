@@ -248,7 +248,11 @@ if __name__ == "__main__":
             print "\nClients"
             lclient = y.clients
             for client in lclient.keys():
-                print "%s %s" %(client.encode('hex'), lclient[client]) 
+                pclient = ppmac(client)
+                plclient = lclient[client]
+                if plclient != "Not Assoicated":
+                    plclient = ppmac(plclient)
+                print "%s %s" %(pclient, lclient[client]) 
     except KeyboardInterrupt:
         print "\nbye"
         sys.exit(0)
