@@ -161,6 +161,19 @@ class Toolkit80211:
             src = frame["src"]
             dst = frame["dst"]
             ds = frame["ds"]
+            #bcast and multicast addrs
+            self.packetBcast = {
+                "oldbcast": '\x00\x00\x00\x00\x00\x00',  # old broadcast address
+                "l2": '\xff\xff\xff\xff\xff\xff',     # layer 2 mac broadcast
+                "ipv6m": '\x33\x33\x00\x00\x00\x16',  # ipv6 multicast
+                "stp": '\x01\x80\xc2\x00\x00\x00',    # Spanning Tree multicast 802.1D
+                "cdp": '\x01\x00\x0c\xcc\xcc\xcc',    # CDP/VTP mutlicast address
+                "cstp": '\x01\x00\x0C\xCC\xCC\xCD',   # Cisco shared STP Address
+                "stpp": '\x01\x80\xc2\x00\x00\x08',   # Spanning Tree multicast 802.1AD
+                "oam": '\x01\x80\xC2\x00\x00\x02',    # oam protocol 802.3ah
+                "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
+                "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
+                }
             if ds == 0:
                 # broadcast/adhoc
                 self.clients[src] = "Not Assoicated"
@@ -171,7 +184,12 @@ class Toolkit80211:
             elif ds == 2:
                 # ap to station
                 # check for wired broadcasts
-                if dst == '\xff\xff\xff\xff\xff\xff':
+                if dst in self.packetBcast.values():
+                    #were doing with a wired broadcast
+                    #make sure we show its connected to an ap
+                    self.clients[src] = bssid
+                # deal with ipv6 mutlicast
+                elif dst[:5] == self.packetBcast["ipv6m"][:5]:
                     #were doing with a wired broadcast
                     #make sure we show its connected to an ap
                     self.clients[src] = bssid
