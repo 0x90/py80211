@@ -294,11 +294,11 @@ if __name__ == "__main__":
             time.sleep(2)
             os.system("clear")
             lbss = y.bss
-            #print "Channel %i" %(y.channel)
-            #print "Access point"
+            print "Channel %i" %(y.channel)
+            print "Access point"
             for bssid in lbss.keys():
                 apbssid = ppmac(bssid)
-                #print "%s %s" %(apbssid, lbss[bssid])
+                print "%s %s" %(apbssid, lbss[bssid])
             print "\nClients"
             lclient = y.clients
             probes = y.clientProbes
@@ -318,3 +318,4 @@ if __name__ == "__main__":
         print "\nbye"
         x.exit()
         sys.exit(0)
+
