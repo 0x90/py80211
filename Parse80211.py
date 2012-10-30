@@ -31,15 +31,19 @@ class IeTag80211:
         self.tagdata = {"unparsed":[]}  # dict to return parsed tags
         offsets = {}
         while len(rbytes) > 0:
-            fbyte = rbytes[0]
-            # add two to account for size byte and tag num byte
-            blen = ord(rbytes[1]) + 2  # byte len of ie tag
-            if fbyte in self.parser.keys():
-                self.parser[fbyte](rbytes[0:blen])
-            else:
-                # we have no parser for the ie tag
-                self.tagdata["unparsed"].append(rbytes[0:blen])
-            rbytes = rbytes[blen:]  # add two to offset tag number and get to new one 
+            try:
+                fbyte = rbytes[0]
+                # add two to account for size byte and tag num byte
+                blen = ord(rbytes[1]) + 2  # byte len of ie tag
+                if fbyte in self.parser.keys():
+                    self.parser[fbyte](rbytes[0:blen])
+                else:
+                    # we have no parser for the ie tag
+                    self.tagdata["unparsed"].append(rbytes[0:blen])
+                rbytes = rbytes[blen:]  # add two to offset tag number and get to new one
+            except IndexError:
+                # mangled packets
+                return -1
        
     def exrates(self, rbytes):
         """
@@ -105,56 +109,60 @@ class IeTag80211:
             1 : "802.1x or PMK",
             2 : "PSK",
             }
-        version = struct.unpack('h', rbytes[2:4])[0]
-        rsn["gtkcsOUI"] = rbytes[4:7]
-        # GTK Bytes Parsing
-        gtkcsTypeI = ord(rbytes[7])
-        if gtkcsTypeI in cipherS.keys():
-            gtkcsType = cipherS[gtkcsTypeI]
-        else:
-            gtkcsType = gtkcsTypeI
-        rsn["gtkcsType"] = gtkcsType
-        # PTK Bytes Parsing
-        # len of ptk types supported
-        ptkcsTypeL = struct.unpack('h', rbytes[8:10])[0]
-        counter = ptkcsTypeL
-        cbyte = 10 #current byte
-        while counter >= ptkcsTypeL:
-            ptkcsTypeOUI = rbytes[cbyte:cbyte+3]
-            ptkcsTypeI = ord(rbytes[cbyte+3])
-            if ptkcsTypeI in cipherS.keys():
-                ptkcsType = cipherS[ptkcsTypeI]
+        try:
+            version = struct.unpack('h', rbytes[2:4])[0]
+            rsn["gtkcsOUI"] = rbytes[4:7]
+            # GTK Bytes Parsing
+            gtkcsTypeI = ord(rbytes[7])
+            if gtkcsTypeI in cipherS.keys():
+                gtkcsType = cipherS[gtkcsTypeI]
             else:
-                ptkcsType = ptkcsTypeI
-            cbyte += 4 # end up on next byte to parse
-            ptkcs.append({"ptkcsOUI":ptkcsTypeOUI,
-                          "ptkcsType":ptkcsType})
-            counter -= 1
+                gtkcsType = gtkcsTypeI
+            rsn["gtkcsType"] = gtkcsType
+            # PTK Bytes Parsing
+            # len of ptk types supported
+            ptkcsTypeL = struct.unpack('h', rbytes[8:10])[0]
+            counter = ptkcsTypeL
+            cbyte = 10 #current byte
+            while counter >= ptkcsTypeL:
+                ptkcsTypeOUI = rbytes[cbyte:cbyte+3]
+                ptkcsTypeI = ord(rbytes[cbyte+3])
+                if ptkcsTypeI in cipherS.keys():
+                    ptkcsType = cipherS[ptkcsTypeI]
+                else:
+                    ptkcsType = ptkcsTypeI
+                cbyte += 4 # end up on next byte to parse
+                ptkcs.append({"ptkcsOUI":ptkcsTypeOUI,
+                              "ptkcsType":ptkcsType})
+                counter -= 1
 
-        akmTypeL = struct.unpack('h', rbytes[cbyte:cbyte+2])[0]
-        cbyte += 2
-        counter = akmTypeL
-        #this might break need testing
-        while counter >= akmTypeL:
-            akmTypeOUI = rbytes[cbyte:cbyte+3]
-            akmTypeI = ord(rbytes[cbyte+3])
-            if akmTypeI in authKey.keys():
-                akmType = authKey[akmTypeI]
-            else:
-                akmType = akmTypeI
-            cbyte += 4 # end up on next byte to parse
-            akm.append({"akmOUI":akmTypeOUI,
-                          "akmType":akmType})
-            counter -= 1
-        # 8 bits are switches for various features
-        capabil = rbytes[cbyte:cbyte+2]
-        cbyte += 3 # end up on PMKID list
-        rsn["pmkidcount"] = rbytes[cbyte:cbyte +2]
-        rsn["pmkidlist"] = rbytes[cbyte+3:]
-        rsn["ptkcs"] = ptkcs
-        rsn["akm"] = akm
-        rsn["capabil"] = capabil
-        self.tagdata["rsn"] = rsn
+            akmTypeL = struct.unpack('h', rbytes[cbyte:cbyte+2])[0]
+            cbyte += 2
+            counter = akmTypeL
+            #this might break need testing
+            while counter >= akmTypeL:
+                akmTypeOUI = rbytes[cbyte:cbyte+3]
+                akmTypeI = ord(rbytes[cbyte+3])
+                if akmTypeI in authKey.keys():
+                    akmType = authKey[akmTypeI]
+                else:
+                    akmType = akmTypeI
+                cbyte += 4 # end up on next byte to parse
+                akm.append({"akmOUI":akmTypeOUI,
+                              "akmType":akmType})
+                counter -= 1
+            # 8 bits are switches for various features
+            capabil = rbytes[cbyte:cbyte+2]
+            cbyte += 3 # end up on PMKID list
+            rsn["pmkidcount"] = rbytes[cbyte:cbyte +2]
+            rsn["pmkidlist"] = rbytes[cbyte+3:]
+            rsn["ptkcs"] = ptkcs
+            rsn["akm"] = akm
+            rsn["capabil"] = capabil
+            self.tagdata["rsn"] = rsn
+        except IndexError:
+            # mangled packets
+            return -1
 
 class Parse80211:
     """
