@@ -241,7 +241,7 @@ class Parse80211:
         wireshark shows subtype as \x20
         """
         # do a bit bitwise & to check which of the last 2 bits are set
-        dsbits = ord(data[0]) & 3
+        dsbits = ord(data[1]) & 3
         dst = data[4:10]  # destination addr 6 bytes
         bssid = data[10:16]  # bssid addr 6 bytes
         src = data[16:22]  # source addr 6 bytes
@@ -253,7 +253,7 @@ class Parse80211:
         subtype = \xC8
         """
         # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[0]) & 3
+        dsbits = ord(data[1]) & 3
         dst = data[4:10]  # destination addr 6 bytes
         src = data[10:16]  # source addr 6 bytes
         bssid = data[16:22]  # bssid addr 6 bytes
@@ -265,7 +265,7 @@ class Parse80211:
         return a dict of with keys of
         src, dst, bssid, probe request
         """
-        dsbits = ord(data[0]) & 3
+        dsbits = ord(data[1]) & 3
         dst = data[4:10]  # destination addr 6 bytes
         src = data[10:16]  # source addr 6 bytes
         bssid = data[16:22]  # bssid addr 6 bytes
@@ -291,7 +291,7 @@ class Parse80211:
         src, dst, bssid, probe request
         """
         # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[0]) & 3
+        dsbits = ord(data[1]) & 3
         dst = data[4:10]  # destination addr 6 bytes
         src = data[10:16]  # source addr 6 bytes
         bssid = data[16:22]  # bssid addr 6 bytes
