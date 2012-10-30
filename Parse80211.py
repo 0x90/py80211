@@ -168,7 +168,6 @@ class Parse80211:
         dev = device name as a string
         """
         self.IE = IeTag80211()
-        self.rt = 18  # radio tap header offset 18 bytes in
         # bytes are in little endian hex
         # doing this based off bytes is wrong... it works mostly however subtype is in bits not bytes and this may break in the future, should run bitwise on the byte
         self.parser = {
@@ -189,6 +188,10 @@ class Parse80211:
         self.lp = pcap.pcapObject()
         # check what these numbers mean
         self.lp.open_live(dev, 1600, 0 ,100)
+        if self.lp.datalink() == 127:
+            self.rth = True
+        else:
+            self.rth = False
     
     def placedef(self, data):
         print data[18].encode('hex')
@@ -206,16 +209,19 @@ class Parse80211:
         choose the right parser
         """
         if frame != None:
-            psize = frame[0]
             data = frame[1]
-            tstamp = frame[2]
+            if self.rth:
+                rt = struct.unpack('h', data[2:4])[0]
+            else:
+                rt = 0
         else:
             return None
         # determine frame subtype
         # subtype should be one off radio tap headers
-        subtype = data[self.rt: self.rt +1]
+        subtype = data[rt:rt +1]
         if subtype in self.parser.keys():
-            return self.parser[subtype](data)
+            #strip the radio tap header
+            return self.parser[subtype](data[rt:])
         else:
             # we dont have a parser for the packet
             return None
@@ -226,13 +232,11 @@ class Parse80211:
         subtype = \x08 data hex byte
         wireshark shows subtype as \x20
         """
-        # fix bug in case we dont get radio tap headers
-        # need to parse ds flags
         # do a bit bitwise & to check which of the last 2 bits are set
-        dsbits = ord(data[19]) & 3
-        dst = data[22:22 + 6]  # destination addr 6 bytes
-        bssid = data[28:28 + 6]  # bssid addr 6 bytes
-        src = data[34:34 + 6]  # source addr 6 bytes
+        dsbits = ord(data[0]) & 3
+        dst = data[4:10]  # destination addr 6 bytes
+        bssid = data[10:16]  # bssid addr 6 bytes
+        src = data[16:22]  # source addr 6 bytes
         return {"key":"\x08", "src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
     def qos(self, data):
@@ -241,10 +245,10 @@ class Parse80211:
         subtype = \xC8
         """
         # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[19]) & 3
-        dst = data[22:22 + 6]  # destination addr 6 bytes
-        src = data[34:34 + 6]  # source addr 6 bytes
-        bssid = data[28:28 + 6]  # bssid addr 6 bytes
+        dsbits = ord(data[0]) & 3
+        dst = data[4:10]  # destination addr 6 bytes
+        src = data[10:16]  # source addr 6 bytes
+        bssid = data[16:22]  # bssid addr 6 bytes
         return {"key":"\xC8", "src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
     def probeResp(self, data):
@@ -253,15 +257,14 @@ class Parse80211:
         return a dict of with keys of
         src, dst, bssid, probe request
         """
-        # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[19]) & 3
-        dst = data[22:22 + 6]  # destination addr 6 bytes
-        src = data[28:28 + 6]  # source addr 6 bytes
-        bssid = data[34:34 + 6]  # bssid addr 6 bytes
+        dsbits = ord(data[0]) & 3
+        dst = data[4:10]  # destination addr 6 bytes
+        src = data[10:16]  # source addr 6 bytes
+        bssid = data[16:22]  # bssid addr 6 bytes
         # parse the IE tags
         # possible bug, no fixed 12 byte paramaters before ie tags?
         # these seem to have it...
-        self.IE.parseIE(data[54:])
+        self.IE.parseIE(data[36:])
         if "ssid" not in self.IE.tagdata.keys():
             essid = ""
         else:
@@ -280,13 +283,13 @@ class Parse80211:
         src, dst, bssid, probe request
         """
         # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[19]) & 3
-        dst = data[22:22 + 6]  # destination addr 6 bytes
-        src = data[28:28 + 6]  # source addr 6 bytes
-        bssid = data[34:34 + 6]  # bssid addr 6 bytes
+        dsbits = ord(data[0]) & 3
+        dst = data[4:10]  # destination addr 6 bytes
+        src = data[10:16]  # source addr 6 bytes
+        bssid = data[16:22]  # bssid addr 6 bytes
         # parse the IE tags
         # possible bug, no fixed 12 byte paramaters before ie tags?
-        self.IE.parseIE(data[42:])
+        self.IE.parseIE(data[24:])
         if "ssid" not in self.IE.tagdata.keys():
             essid = ""
         else:
@@ -306,11 +309,12 @@ class Parse80211:
         going to need to add more
         """
         # fix bug in case we dont get radio tap headers
-        dst = data[22:22 + 6]  # destination addr 6 bytes
-        src = data[28:28 + 6]  # source addr 6 bytes
-        bssid = data[34:34 + 6]  # bssid addr 6 bytes
+        dst = data[4:10]  # destination addr 6 bytes
+        src = data[10:16]  # source addr 6 bytes
+        bssid = data[16:22]  # bssid addr 6 bytes
         # parse the IE tags
-        self.IE.parseIE(data[54:])
+        # assuming we have 12 byte paramaters
+        self.IE.parseIE(data[36:])
         if "ssid" not in self.IE.tagdata.keys():
             essid = ""
         else:
