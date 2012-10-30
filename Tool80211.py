@@ -20,7 +20,11 @@ class Toolkit80211:
         """
         # open the card up and gain a a context to them
         # create a dict with interface name and context
-        self.moniface = {"ctx":PyLorcon2.Context(interface)}
+        try:
+            self.moniface = {"ctx":PyLorcon2.Context(interface)}
+        except PyLorcon2.Lorcon2Exception,e:
+            print "%s is the %s interface there?" %(e, interface)
+            sys.exit(-1)
         # place cards in injection/monitor mode
         self.moniface["ctx"].open_injmon()
         self.moniface["name"] = self.moniface["ctx"].get_vap()
@@ -184,6 +188,8 @@ class Toolkit80211:
             elif ds == 2:
                 # ap to station
                 # check for wired broadcasts
+                #if dst[0:3] == "\xff\xff":
+                #    pdb.set_trace()
                 if dst in self.packetBcast.values():
                     #were doing with a wired broadcast
                     #make sure we show its connected to an ap
@@ -288,11 +294,11 @@ if __name__ == "__main__":
             time.sleep(2)
             os.system("clear")
             lbss = y.bss
-            print "Channel %i" %(y.channel)
-            print "Access point"
+            #print "Channel %i" %(y.channel)
+            #print "Access point"
             for bssid in lbss.keys():
                 apbssid = ppmac(bssid)
-                print "%s %s" %(apbssid, lbss[bssid])
+                #print "%s %s" %(apbssid, lbss[bssid])
             print "\nClients"
             lclient = y.clients
             probes = y.clientProbes
@@ -303,8 +309,10 @@ if __name__ == "__main__":
                     plclient = ppmac(plclient)
                 probes = y.getProbes(client)
                 if probes != None:
+                    pass
                     print "%s %s %s" %(pclient, plclient, ','.join(probes))
                 else:
+                    pass
                     print "%s %s" %(pclient, plclient) 
     except KeyboardInterrupt:
         print "\nbye"
