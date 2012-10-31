@@ -315,10 +315,10 @@ if __name__ == "__main__":
                 probes = y.getProbes(client)
                 if probes != None:
                     pass
-                    print "%s %s %s" %(pclient, plclient, ','.join(probes))
+                    print pclient, plclient, ','.join(probes)
                 else:
                     pass
-                    print "%s %s" %(pclient, plclient) 
+                    print pclient, plclient
     except KeyboardInterrupt:
         print "\nbye"
         x.exit()
