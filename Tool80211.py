@@ -239,6 +239,7 @@ class Toolkit80211:
                     self.apData[bssid] = frame
                     continue
                 # data frames
+                # actual hex bytes right now
                 elif frame["key"] in ["\x08", "\xC8","\x40"]:
                     self.updateClient(frame)
                 if frame["key"] in ["\x40"]:
