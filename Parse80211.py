@@ -175,6 +175,11 @@ class Parse80211:
         open up the device to sniff from
         dev = device name as a string
         """
+        # this gets set to True if were seeing mangled packets
+        self.mangled = False
+        # number of mangled packets seen
+        self.mangledcount = 0
+        # create ie tag parser
         self.IE = IeTag80211()
         # bytes are in little endian hex
         # doing this based off bytes is wrong... it works mostly however subtype is in bits not bytes and this may break in the future, should run bitwise on the byte
@@ -229,6 +234,8 @@ class Parse80211:
         subtype = data[rt:rt +1]
         if subtype in self.parser.keys():
             #strip the radio tap header
+            # will return -1 if packet is mangled
+            # none if we cant parse it
             return self.parser[subtype](data[rt:])
         else:
             # we dont have a parser for the packet
@@ -241,10 +248,15 @@ class Parse80211:
         wireshark shows subtype as \x20
         """
         # do a bit bitwise & to check which of the last 2 bits are set
-        dsbits = ord(data[1]) & 3
-        dst = data[4:10]  # destination addr 6 bytes
-        bssid = data[10:16]  # bssid addr 6 bytes
-        src = data[16:22]  # source addr 6 bytes
+        try:
+            dsbits = ord(data[1]) & 3
+            dst = data[4:10]  # destination addr 6 bytes
+            bssid = data[10:16]  # bssid addr 6 bytes
+            src = data[16:22]  # source addr 6 bytes
+        except IndexError:
+            self.mangled = True
+            self.mangledcount += 1
+            return -1
         return {"key":"\x08", "src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
     def qos(self, data):
@@ -253,10 +265,15 @@ class Parse80211:
         subtype = \xC8
         """
         # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[1]) & 3
-        dst = data[4:10]  # destination addr 6 bytes
-        src = data[10:16]  # source addr 6 bytes
-        bssid = data[16:22]  # bssid addr 6 bytes
+        try:
+            dsbits = ord(data[1]) & 3
+            dst = data[4:10]  # destination addr 6 bytes
+            src = data[10:16]  # source addr 6 bytes
+            bssid = data[16:22]  # bssid addr 6 bytes
+        except IndexError:
+            self.mangled = True
+            self.mangledcount += 1
+            return -1
         return {"key":"\xC8", "src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
     def probeResp(self, data):
@@ -265,22 +282,27 @@ class Parse80211:
         return a dict of with keys of
         src, dst, bssid, probe request
         """
-        dsbits = ord(data[1]) & 3
-        dst = data[4:10]  # destination addr 6 bytes
-        src = data[10:16]  # source addr 6 bytes
-        bssid = data[16:22]  # bssid addr 6 bytes
-        # parse the IE tags
-        # possible bug, no fixed 12 byte paramaters before ie tags?
-        # these seem to have it...
-        self.IE.parseIE(data[36:])
-        if "ssid" not in self.IE.tagdata.keys():
-            essid = ""
-        else:
-            essid = self.IE.tagdata["ssid"]
-        if "channel" not in self.IE.tagdata.keys():
-            channel = ""
-        else:
-            channel = self.IE.tagdata["channel"]
+        try:
+            dsbits = ord(data[1]) & 3
+            dst = data[4:10]  # destination addr 6 bytes
+            src = data[10:16]  # source addr 6 bytes
+            bssid = data[16:22]  # bssid addr 6 bytes
+            # parse the IE tags
+            # possible bug, no fixed 12 byte paramaters before ie tags?
+            # these seem to have it...
+            self.IE.parseIE(data[36:])
+            if "ssid" not in self.IE.tagdata.keys():
+                essid = ""
+            else:
+                essid = self.IE.tagdata["ssid"]
+            if "channel" not in self.IE.tagdata.keys():
+                channel = ""
+            else:
+                channel = self.IE.tagdata["channel"]
+        except IndexError:
+            self.mangled = True
+            self.mangledcount += 1
+            return -1
         return {"key":"\x50", "bssid":bssid, "essid":essid, "src":src, 
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
     
@@ -290,22 +312,26 @@ class Parse80211:
         return a dict of with keys of
         src, dst, bssid, probe request
         """
-        # fix bug in case we dont get radio tap headers
-        dsbits = ord(data[1]) & 3
-        dst = data[4:10]  # destination addr 6 bytes
-        src = data[10:16]  # source addr 6 bytes
-        bssid = data[16:22]  # bssid addr 6 bytes
-        # parse the IE tags
-        # possible bug, no fixed 12 byte paramaters before ie tags?
-        self.IE.parseIE(data[24:])
-        if "ssid" not in self.IE.tagdata.keys():
-            essid = ""
-        else:
-            essid = self.IE.tagdata["ssid"]
-        if "channel" not in self.IE.tagdata.keys():
-            channel = ""
-        else:
-            channel = self.IE.tagdata["channel"]
+        try:
+            dsbits = ord(data[1]) & 3
+            dst = data[4:10]  # destination addr 6 bytes
+            src = data[10:16]  # source addr 6 bytes
+            bssid = data[16:22]  # bssid addr 6 bytes
+            # parse the IE tags
+            # possible bug, no fixed 12 byte paramaters before ie tags?
+            self.IE.parseIE(data[24:])
+            if "ssid" not in self.IE.tagdata.keys():
+                essid = ""
+            else:
+                essid = self.IE.tagdata["ssid"]
+            if "channel" not in self.IE.tagdata.keys():
+                channel = ""
+            else:
+                channel = self.IE.tagdata["channel"]
+        except IndexError:
+            self.mangled = True
+            self.mangledcount += 1
+            return -1
         return {"key":"\x40", "bssid":bssid, "essid":essid, "src":src, 
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
     
@@ -316,21 +342,25 @@ class Parse80211:
         src, dst, bssid, essid, channel ....
         going to need to add more
         """
-        # fix bug in case we dont get radio tap headers
-        dst = data[4:10]  # destination addr 6 bytes
-        src = data[10:16]  # source addr 6 bytes
-        bssid = data[16:22]  # bssid addr 6 bytes
-        # parse the IE tags
-        # assuming we have 12 byte paramaters
-        self.IE.parseIE(data[36:])
-        if "ssid" not in self.IE.tagdata.keys():
-            essid = ""
-        else:
-            essid = self.IE.tagdata["ssid"]
-        if "channel" not in self.IE.tagdata.keys():
-            channel = ""
-        else:
-            channel = self.IE.tagdata["channel"]
+        try:
+            dst = data[4:10]  # destination addr 6 bytes
+            src = data[10:16]  # source addr 6 bytes
+            bssid = data[16:22]  # bssid addr 6 bytes
+            # parse the IE tags
+            # assuming we have 12 byte paramaters
+            self.IE.parseIE(data[36:])
+            if "ssid" not in self.IE.tagdata.keys():
+                essid = ""
+            else:
+                essid = self.IE.tagdata["ssid"]
+            if "channel" not in self.IE.tagdata.keys():
+                channel = ""
+            else:
+                channel = self.IE.tagdata["channel"]
+        except IndexError:
+            self.mangled = True
+            self.mangledcount += 1
+            return -1
         return {"key":"\x80", "bssid":bssid, "essid":essid, "src":src, "dst":dst, "channel":channel, "extended":self.IE.tagdata}
 
 if __name__ == "__main__":
