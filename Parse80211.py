@@ -343,6 +343,7 @@ class Parse80211:
         going to need to add more
         """
         try:
+            dsbits = ord(data[1]) & 3
             dst = data[4:10]  # destination addr 6 bytes
             src = data[10:16]  # source addr 6 bytes
             bssid = data[16:22]  # bssid addr 6 bytes
@@ -361,7 +362,8 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"key":"\x80", "bssid":bssid, "essid":essid, "src":src, "dst":dst, "channel":channel, "extended":self.IE.tagdata}
+        return {"key":"\x80", "bssid":bssid, "essid":essid, "src":src, "dst":dst, 
+            "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
 
 if __name__ == "__main__":
     x = Parse80211(sys.argv[1])
