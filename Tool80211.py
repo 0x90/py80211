@@ -219,6 +219,10 @@ class Toolkit80211:
                             self.rd.getFrame())
                 # beacon frames
                 if frame == None:
+                    # we cant parse the frame
+                    continue
+                if frame == -1:
+                    # frame is mangled
                     continue
                 if frame["key"] == "\x80":
                     bssid = frame["bssid"]
