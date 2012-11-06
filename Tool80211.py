@@ -224,7 +224,8 @@ class Toolkit80211:
                 if frame == -1:
                     # frame is mangled
                     continue
-                if frame["key"] == "\x80":
+                if frame["type"] == 0 and frame["stype"] == 8:
+                    # beacon packet
                     bssid = frame["bssid"]
                     essid = frame["essid"]
                     # update bss list, we dont check for keys
@@ -238,11 +239,15 @@ class Toolkit80211:
                     #update all info about ap
                     self.apData[bssid] = frame
                     continue
-                # data frames
-                # actual hex bytes right now
-                elif frame["key"] in ["\x08", "\xC8","\x40"]:
+                elif frame["type"] == 0 and frame["stype"] in [4]:
+                    # probe request
+                    # applying to all probe requests
                     self.updateClient(frame)
-                if frame["key"] in ["\x40"]:
+                elif frame["type"] == 2 and frame["stype"] in range(0,16):
+                    #applying to all data packets
+                    self.updateClient(frame)
+                if frame["type"] == 0 and frame["stype"] in [4]:
+                    #pdb.set_trace()
                     src = frame["src"]
                     essid = frame["essid"]
                     if frame["src"] in self.clientProbes.keys():
