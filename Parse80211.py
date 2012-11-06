@@ -268,8 +268,6 @@ class Parse80211:
     def data(self, data):
         """
         parse the src,dst,bssid from a data frame
-        subtype = \x08 data hex byte
-        wireshark shows subtype as \x20
         """
         # do a bit bitwise & to check which of the last 2 bits are set
         try:
@@ -287,7 +285,6 @@ class Parse80211:
         """
         # not really needed can be removed
         parse the src,dst,bssid from a qos frame
-        subtype = \xC8
         """
         # fix bug in case we dont get radio tap headers
         try:
