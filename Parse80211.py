@@ -281,7 +281,7 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"key":"\x08", "src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
+        return {"src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
     def qos(self, data):
         """
@@ -299,7 +299,7 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"key":"\xC8", "src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
+        return {"src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
     def probeResp(self, data):
         """
@@ -328,7 +328,7 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"key":"\x50", "bssid":bssid, "essid":essid, "src":src, 
+        return {"bssid":bssid, "essid":essid, "src":src, 
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
     
     def probeReq(self, data):
@@ -357,7 +357,7 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"key":"\x40", "bssid":bssid, "essid":essid, "src":src, 
+        return {"bssid":bssid, "essid":essid, "src":src, 
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
     
     def beacon(self, data):
@@ -387,7 +387,7 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"key":"\x80", "bssid":bssid, "essid":essid, "src":src, "dst":dst, 
+        return {"bssid":bssid, "essid":essid, "src":src, "dst":dst, 
             "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
 
 if __name__ == "__main__":
