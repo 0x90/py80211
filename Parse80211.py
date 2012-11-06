@@ -181,23 +181,36 @@ class Parse80211:
         self.mangledcount = 0
         # create ie tag parser
         self.IE = IeTag80211()
-        # bytes are in little endian hex
-        # doing this based off bytes is wrong... it works mostly however subtype is in bits not bytes and this may break in the future, should run bitwise on the byte
-        self.parser = {
-            "\x00": self.placedef,   # assoication request 
-            "\x10": self.placedef,   # assoication responce
-            "\x20": self.placedef,   # reassoication request
-            "\x30": self.placedef,   # reassoication response
-            "\x40": self.probeReq,   # probe request
-            "\x50": self.probeResp,  # probe response
-            "\x80": self.beacon,     # Beacon
-            "\x90": self.placedef,   # ATIM
-            "\xA0": self.placedef,   # disassoication
-            "\xB0": self.placedef,   # Authenticaiton
-            "\xC0": self.placedef,   # Deauthentication
-            "\xC8": self.qos,        # qos
-            "\x08": self.data,       # data
-        }
+        self.parser = {0:{  # managment frames
+            0: self.placedef,   # assoication request
+            1: self.placedef,   # assoication response
+            2: self.placedef,   # reassoication request
+            3: self.placedef,   # reaassoication response
+            4: self.probeReq,   # probe request
+            5: self.probeResp,  # probe response
+            8: self.beacon,     # beacon
+            9: self.placedef,   # ATIM
+            10: self.placedef,  # disassoication
+            11: self.placedef,  # authentication
+            12: self.placedef,  # deauthentication
+            }, 1:{},  # control frames
+            2:{  # data frames
+             0: self.data,  # data
+             1: self.data,  # data + CF-ack
+             2: self.data,  # data + CF-poll
+             3: self.data,  # data + CF-ack+CF-poll
+             5: self.data,  # CF-ack
+             6: self.data,  # CF-poll
+             7: self.data,  # CF-ack+CF-poll
+             8: self.data,  # QoS Data
+             9: self.data,  # QoS Data + CF-ack
+             10: self.data,  # QoS Data + CF-poll
+             11: self.data,  # QoS Data + CF-ack+CF-poll
+             12: self.data,  # QoS Null
+             14: self.data,  # QoS + CF-poll (no data)
+             15: self.data,  # QoS + CF-ack (no data)
+             }}
+
         self.lp = pcap.pcapObject()
         # check what these numbers mean
         self.lp.open_live(dev, 1600, 0 ,100)
@@ -230,13 +243,24 @@ class Parse80211:
         else:
             return None
         # determine frame subtype
-        # subtype should be one off radio tap headers
-        subtype = data[rt:rt +1]
-        if subtype in self.parser.keys():
-            #strip the radio tap header
-            # will return -1 if packet is mangled
-            # none if we cant parse it
-            return self.parser[subtype](data[rt:])
+        # subtype byte should be one off radio tap headers
+        #subtype = data[rt:rt +1]
+        ptype = ord(data[rt])
+        # wipe out all bits we dont need
+        ftype = (ptype >> 2) & 3
+        stype = ptype >> 4
+
+        if ftype in self.parser.keys():
+            if stype in self.parser[ftype].keys():
+                # will return -1 if packet is mangled
+                # none if we cant parse it
+                parsedFrame = self.parser[ftype][stype](data[rt:])
+                parsedFrame["type"] = ftype
+                parsedFrame["stype"] = stype
+                return parsedFrame
+            else:
+                # we dont have a parser for the packet
+                return None
         else:
             # we dont have a parser for the packet
             return None
@@ -261,6 +285,7 @@ class Parse80211:
 
     def qos(self, data):
         """
+        # not really needed can be removed
         parse the src,dst,bssid from a qos frame
         subtype = \xC8
         """
