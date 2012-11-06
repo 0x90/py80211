@@ -256,7 +256,7 @@ class Parse80211:
                 # none if we cant parse it
                 parsedFrame = self.parser[ftype][stype](data[rt:])
                 # packet is mangled some how return the error
-                if ParsedFrame in [None, -1]:
+                if parsedFrame in [None, -1]:
                     return ParsedFrame
                 else:
                     parsedFrame["type"] = ftype
