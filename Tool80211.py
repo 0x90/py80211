@@ -156,6 +156,8 @@ class Toolkit80211:
             self.clients = {}
             # probes from a given client
             self.clientProbes = {}
+            # info on clients
+            self.clientsExtra = {}
         
         def updateClient(self, frame):
             """
@@ -181,26 +183,44 @@ class Toolkit80211:
             if ds == 0:
                 # broadcast/adhoc
                 self.clients[src] = "Not Assoicated"
+                if src in self.clientsExtra.keys():
+                    self.clientsExtra[src]['wired'] = False
+                else:
+                    self.clientsExtra[src] = {'wired':False}
             elif ds == 1:
                 # station to ap
                 self.clients[src] = bssid
+                if src in self.clientsExtra.keys():
+                    self.clientsExtra[src]['wired'] = False
+                else:
+                    self.clientsExtra[src] = {'wired':False}
                 return
             elif ds == 2:
                 # ap to station
                 # check for wired broadcasts
-                #if dst[0:3] == "\xff\xff":
-                #    pdb.set_trace()
                 if dst in self.packetBcast.values():
                     #were doing with a wired broadcast
                     #make sure we show its connected to an ap
                     self.clients[src] = bssid
+                    if src in self.clientsExtra.keys():
+                        self.clientsExtra[src]['wired'] = True
+                    else:
+                        self.clientsExtra[src] = {'wired':True}
                 # deal with ipv6 mutlicast
                 elif dst[:5] == self.packetBcast["ipv6m"][:5]:
                     #were doing with a wired broadcast
                     #make sure we show its connected to an ap
                     self.clients[src] = bssid
+                    if src in self.clientsExtra.keys():
+                        self.clientsExtra[src]['wired'] = True
+                    else:
+                        self.clientsExtra[src] = {'wired':True}
                 else:
                     self.clients[dst] = bssid
+                    if src in self.clientsExtra.keys():
+                        self.clientsExtra[src]['wired'] = False
+                    else:
+                        self.clientsExtra[src] = {'wired':False}
                 return
             elif ds == 3:
                 # wds, were ignoring this for now
@@ -239,15 +259,13 @@ class Toolkit80211:
                     #update all info about ap
                     self.apData[bssid] = frame
                     continue
-                elif frame["type"] == 0 and frame["stype"] in [4]:
-                    # probe request
-                    # applying to all probe requests
-                    self.updateClient(frame)
                 elif frame["type"] == 2 and frame["stype"] in range(0,16):
                     #applying to all data packets
                     self.updateClient(frame)
                 if frame["type"] == 0 and frame["stype"] in [4]:
-                    #pdb.set_trace()
+                    # update client list
+                    self.updateClient(frame)
+                    # process probe for essid
                     src = frame["src"]
                     essid = frame["essid"]
                     if frame["src"] in self.clientProbes.keys():
@@ -311,9 +329,14 @@ if __name__ == "__main__":
                 print "%s %s" %(apbssid, lbss[bssid])
             print "\nClients"
             lclient = y.clients
+            eclient = y.clientsExtra
             probes = y.clientProbes
             for client in lclient.keys():
                 pclient = ppmac(client)
+                # removed wired devices
+                if client in eclient.keys():
+                    if eclient[client]['wired'] == True:
+                        continue
                 plclient = lclient[client]
                 if plclient != "Not Assoicated":
                     plclient = ppmac(plclient)
