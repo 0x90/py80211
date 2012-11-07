@@ -281,8 +281,8 @@ class Toolkit80211:
             return a list of probe requests 
             for a given client
             """
-            if cmac in self.clientProbes:
-                return self.clientProbes[client].keys()
+            if cmac in self.clientProbes.keys():
+                return self.clientProbes[cmac].keys()
             else:
                 return None
 
