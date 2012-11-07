@@ -1,18 +1,32 @@
 import sys
 import time
 import os
-
+import optparse
 # update the system path to look for Tool80211 one directory up
 sys.path.append('../')
 import Tool80211
 
+
 if __name__ == "__main__":
+    print "Py80211 Sample Application"
+    parser = optparse.OptionParser("%prog options [-i]")
+    parser.add_option("-i", "--interface", dest="card", nargs=1,
+        help="Interface to sniff and inject from")
+    
+    #check for correct number of arguments provided
+    if len(sys.argv) < 2:
+        parser.print_help()
+        print "Calling Example"
+        print "python pyview.py -i wlan0"
+        sys.exit(0)
+    else:
+        (options, args) = parser.parse_args()
     try:
         """
         create an instance and create vap and monitor
         mode interface
         """
-        x = Tool80211.Toolkit80211(sys.argv[1])
+        x = Tool80211.Toolkit80211(options.card)
         """
         create an instance of Airview
         will only work with one interface for the time being
