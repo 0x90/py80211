@@ -207,7 +207,7 @@ class Toolkit80211:
                     else:
                         self.clientsExtra[src] = {'wired':True}
                 # deal with ipv6 mutlicast
-                elif dst[:5] == self.packetBcast["ipv6m"][:5]:
+                elif dst[:2] == self.packetBcast["ipv6m"][:2]:
                     #were doing with a wired broadcast
                     #make sure we show its connected to an ap
                     self.clients[src] = bssid
