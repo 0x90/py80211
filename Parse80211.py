@@ -285,23 +285,6 @@ class Parse80211:
             return -1
         return {"src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
-    def qos(self, data):
-        """
-        # not really needed can be removed
-        parse the src,dst,bssid from a qos frame
-        """
-        # fix bug in case we dont get radio tap headers
-        try:
-            dsbits = ord(data[1]) & 3
-            dst = data[4:10]  # destination addr 6 bytes
-            src = data[10:16]  # source addr 6 bytes
-            bssid = data[16:22]  # bssid addr 6 bytes
-        except IndexError:
-            self.mangled = True
-            self.mangledcount += 1
-            return -1
-        return {"src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
-
     def probeResp(self, data):
         """
         Parse out probe response
