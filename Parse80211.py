@@ -276,9 +276,20 @@ class Parse80211:
         # do a bit bitwise & to check which of the last 2 bits are set
         try:
             dsbits = ord(data[1]) & 3
-            dst = data[4:10]  # destination addr 6 bytes
-            bssid = data[10:16]  # bssid addr 6 bytes
-            src = data[16:22]  # source addr 6 bytes
+            # from ds to station via ap
+            if dsbits == 1:
+                bssid = data[4:10]  # bssid addr 6 bytes
+                src = data[10:16]  # src addr 6 bytes
+                dst = data[16:22]  # destination addr 6 bytes
+            # from station to ds va ap
+            elif dsbits == 2:
+                dst = data[4:10]  # destination addr 6 bytes
+                bssid = data[10:16]  # bssid addr 6 bytes
+                src = data[16:22]  # source addr 6 bytes
+            # wds frame
+            elif dsbits == 3:
+                # we dont do anything with these yet
+                return None
         except IndexError:
             self.mangled = True
             self.mangledcount += 1
