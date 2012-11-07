@@ -40,7 +40,7 @@ class IeTag80211:
                 else:
                     # we have no parser for the ie tag
                     self.tagdata["unparsed"].append(rbytes[0:blen])
-                rbytes = rbytes[blen:]  # add two to offset tag number and get to new one
+                rbytes = rbytes[blen:]
             except IndexError:
                 # mangled packets
                 return -1
