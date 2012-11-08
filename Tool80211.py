@@ -182,7 +182,7 @@ class Toolkit80211:
                 }
             if ds == 0:
                 # broadcast/adhoc
-                self.clients[src] = "Not Assoicated"
+                self.clients[src] = "Not Associated"
                 if src in self.clientsExtra.keys():
                     self.clientsExtra[src]['wired'] = False
                 else:
