@@ -1,15 +1,15 @@
-The following is the documentation and sample code for the Tool802.11 libary.
-The Tool802.11 libary consists of a single class called Toolkit80211 and
-several sub classes called ChannelHop ,Airview and Randombits.
+The following is the documentation and sample code for the Tool802.11 library.
+The Tool802.11 library consists of a single class called Toolkit80211 and
+several subclasses called ChannelHop ,Airview and Randombits.
 
 Toolkit802.11 Class:
-Toolkit802.11 expects to be instanicated with a wireless interface that is not
+Toolkit802.11 expects to be instantiated with a wireless interface that is not
 in monitor mode. The interface name is provided as a string. For example...
 wlan0. Once this is provided the init creates a monitor mode vap interface for
 that interface. This creates and populates the following dictionary var,
-moniface. Its break down is as follows
+moniface. Its breakdown is as follows
 moniface keys
-'ctx' = monitormode injection interface context. use this to send packets.
+'ctx' = monitor mode injection interface context. use this to send packets.
 Read pylorcon/lorcon documentation for examples on how to do this
 'name' = name of the vap interface created by lorcon. This is needed so it can
 be provided to pylibpcap for packet sniffing.
@@ -28,7 +28,7 @@ objects. When an instance of this class is called it will populate several
 objects that provide the following information.
 
 #apData object
-This is a dictonary object with the key being the bssid of the accesspoint.
+This is a dictionary object with the key being the bssid of the access point.
 The value is the entire beacon frame as its returned by the parser
 
 #ess object
@@ -38,12 +38,13 @@ see "fake" or "evil twin" access points in here. The goal of this object is to
 identify Extended service set areas.
 
 #clients object
-This is a dictonary object with the key being the clients mac address and its
-current assoication as the value. If the client is not assoicated then the
-value will be "Not Assoicated"
+This is a dictionary object with the key being the clients mac address and its
+current association as the value. If the client is not associated then the
+value will be "Not Associated"
 
 #clientsExtra object
-This is a nested dictonary object that provides extra information on a client.
+This is a nested dictionary object that provides extra information on a
+client.
 Providing the a client mac address to this object will return a dictionary
 with extra information about that client.
 As of the time of the writing of this documentation there is only one key in
@@ -52,6 +53,6 @@ device was seen via wired broadcast or via wireless packet. If you are only
 interested in wireless devices filtering clients based on this is useful.
 
 RandomClass:
-This class currently has a single staticmethod that will pretty print out mac
+This class currently has a single static method that will pretty print out mac
 addresses in the format of xx:xx:xx:xx:xx:xx. It expects a string of raw hex
 bytes to be provided.
