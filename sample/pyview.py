@@ -74,7 +74,7 @@ if __name__ == "__main__":
                     if eclient[client]['wired'] == True:
                         continue
                 plclient = lclient[client]
-                if plclient != "Not Assoicated":
+                if plclient != "Not Associated":
                     plclient = ppmac(plclient)
                 probes = y.getProbes(client)
                 # print out a probe list, otherwise just print the client and its assoication
