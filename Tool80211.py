@@ -310,4 +310,3 @@ class Toolkit80211:
             for byte in hexbytes:
                 mac.append(byte.encode('hex'))
             return ':'.join(mac)
-
