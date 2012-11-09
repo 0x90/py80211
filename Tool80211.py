@@ -276,6 +276,27 @@ class Toolkit80211:
                         if essid != '':
                             self.clientProbes[src] = {essid:""}
         
+        def getCapr(self, wiredc=False):
+            """
+            Parse clients list to build current list 
+            of bssids and their clients
+            set wiredc to True to include wired devices discovered by broadcast
+            """
+            self.capr = {}
+            for client in self.clients.keys():
+                # include or exclude wired devices
+                if wiredc is False:
+                  if client in self.clientsExtra.keys():
+                    if self.clientsExtra[client]['wired'] is False:
+                        # skip the wired devices
+                        continue
+                bssid = self.clients[client]
+                if bssid != "Not Associated":
+                    if bssid not in self.capar.keys():
+                        self.capar[bssid] = [client]
+                    else:
+                        self.capar[bssid].append(client)
+
         def getProbes(self, cmac):
             """
             return a list of probe requests 
