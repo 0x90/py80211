@@ -11,8 +11,10 @@ import os
 
 class Toolkit80211:
     """
-    Group of class's for working with 80211
+    Group of classes for working with 80211
     """
+    air = ""
+
     def __init__(self,interface):
         """
         interface = string 
@@ -28,6 +30,11 @@ class Toolkit80211:
         # place cards in injection/monitor mode
         self.moniface["ctx"].open_injmon()
         self.moniface["name"] = self.moniface["ctx"].get_vap()
+	self.air = self.Airview(self.moniface)
+	self.air.start()
+
+    def open(self):
+	return self.air
 
     def exit(self):
         """
@@ -158,7 +165,24 @@ class Toolkit80211:
             self.clientProbes = {}
             # info on clients
             self.clientsExtra = {}
-        
+
+	    #the above works fine, but let's get more efficient
+	    self.ap = {}
+	    # ap = key{essid},value{bssid,clients}
+	    # clients = list[mac]
+
+
+        @staticmethod
+        def pformatMac(hexbytes):
+            """
+            Take in hex bytes and pretty format them 
+            to the screen in the xx:xx:xx:xx:xx:xx format
+            """
+            mac = []
+            for byte in hexbytes:
+                mac.append(byte.encode('hex'))
+            return ':'.join(mac)
+
         def updateClient(self, frame):
             """
             Update self.clients var based on ds bits
@@ -315,19 +339,3 @@ class Toolkit80211:
             self.hopper = Toolkit80211.ChannelHop(self.ctx)
             self.hopper.start()
             self.parse()
-    
-    class RandomBits:
-        """
-        Class to hold all the random functions 
-        to do one off things
-        """
-        @staticmethod
-        def pformatMac(hexbytes):
-            """
-            Take in hex bytes and pretty format them 
-            to the screen in the xx:xx:xx:xx:xx:xx format
-            """
-            mac = []
-            for byte in hexbytes:
-                mac.append(byte.encode('hex'))
-            return ':'.join(mac)
