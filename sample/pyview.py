@@ -26,21 +26,15 @@ if __name__ == "__main__":
         create an instance and create vap and monitor
         mode interface
         """
-        x = Tool80211.Toolkit80211(options.card)
-        """
-        create an instance of Airview
-        will only work with one interface for the time being
-        """
-        y = x.Airview(x.moniface)
-        # start airview parsing and channel hopping
-        y.start()
-        ppmac = x.RandomBits.pformatMac
+        interface = Tool80211.Toolkit80211(options.card)
+	airmonitor = interface.open();
+        ppmac = airmonitor.pformatMac
         while True:
             """
             run loop every 2 seconds to give us a chance to get new data
             this is a long time but not terrible
             """
-            time.sleep(2)
+            time.sleep(1)
             # clear the screen on every loop
             os.system("clear")
             """
@@ -48,14 +42,17 @@ if __name__ == "__main__":
             This allows us to work with snapshots and not
             have to deal with thread lock issues
             """
-            lbss = y.bss
+            lbss = airmonitor.bss
             # print the current sniffing channel to the screen
-            print "Channel %i" %(y.channel)
+	    #this will always be 11 right now -- threading bad?
+            #print "Channel %i" %(airmonitor.channel)
             # print out the access points and their essids
             print "Access point"
             for bssid in lbss.keys():
                 apbssid = ppmac(bssid)
-                print "%s %s" %(apbssid, lbss[bssid])
+		# we don't get as many mangled packets now, but every so often...
+		# we don't do mangle detection yet, so for now we deal.
+                print ("%s %s" %(apbssid, lbss[bssid])).encode("utf-8")
             """
             Print out the clients and anything they are assoicated to
             as well as probes to the screen
@@ -63,9 +60,9 @@ if __name__ == "__main__":
             print "\nClients"
             # get local copies from airview thread
             # local clients
-            lclient = y.clients
+            lclient = airmonitor.clients
             # local clientsExtra
-            eclient = y.clientsExtra
+            eclient = airmonitor.clientsExtra
             # for each client show its data
             for client in lclient.keys():
                 pclient = ppmac(client)
@@ -76,7 +73,7 @@ if __name__ == "__main__":
                 plclient = lclient[client]
                 if plclient != "Not Associated":
                     plclient = ppmac(plclient)
-                probes = y.getProbes(client)
+                probes = airmonitor.getProbes(client)
                 # print out a probe list, otherwise just print the client and its assoication
                 if probes != None:
                     pass
@@ -86,7 +83,7 @@ if __name__ == "__main__":
                     print pclient, plclient
     except KeyboardInterrupt:
         print "\nbye"
-        x.exit()
+        interface.exit()
         sys.exit(0)
 
 
