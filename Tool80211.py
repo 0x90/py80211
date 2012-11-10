@@ -14,12 +14,14 @@ class Toolkit80211:
     Group of classes for working with 80211
     """
     air = ""
+    chanlock = 0
 
     def __init__(self,interface):
         """
         interface = string 
         currently assumes all cards are to be opened in monitor mode
         """
+	#print self.chanlock
         # open the card up and gain a a context to them
         # create a dict with interface name and context
         try:
@@ -52,6 +54,7 @@ class Toolkit80211:
             set the channel hopping sequence
             expects lorcon injmon() context
             """
+	    self.lock = 0
             threading.Thread.__init__(self)
             threading.Thread.daemon = True
             self.iface = interface
@@ -97,8 +100,11 @@ class Toolkit80211:
             Set a single channel
             expects channel to be an int
             returns -1 if channel isnt supported
-            #should raise an expection if this is the case
+            #should raise an exception if this is the case
             """
+	    while self.lock == 1:
+		print "!!!!!!!!!!!!!!Waiting for lock...!!!!!!!!!!!!"
+		time.sleep(2)
             if channel in self.hopList:
                 self.iface.set_channel(channel)
                 return 0
@@ -111,7 +117,7 @@ class Toolkit80211:
             """
             while True:
                 # hopping is paused though loop still runs
-                if self.pause == True:
+                if self.pause == True | self.lock == 1:
                     continue
                 for ch in self.hopList:
                     try:
@@ -143,6 +149,8 @@ class Toolkit80211:
             Open up a packet parser for a given interface
             Thread the instance
             """
+	    self.hopper = ""
+
             threading.Thread.__init__(self)
             threading.Thread.daemon = True
             # get interface name for use with pylibpcap
@@ -167,9 +175,9 @@ class Toolkit80211:
             self.clientsExtra = {}
 
 	    #the above works fine, but let's get more efficient
-	    self.ap = {}
+	    self.view = {}
 	    # ap = key{essid},value{bssid,clients}
-	    # clients = list[mac]
+	    # clients = key{mac},value{probelist[]}
 
 
         @staticmethod
@@ -258,9 +266,13 @@ class Toolkit80211:
             The airview state vars
             """
             while True:
+		#TODO: we may need to set semaphore here?
+		self.hopper.lock = 1
                 self.channel = self.hopper.current
                 frame = self.rd.parseFrame(
                             self.rd.getFrame())
+		self.hopper.lock = 0
+		#release semaphore here -- we have what we came for
                 # beacon frames
                 if frame == None:
                     # we cant parse the frame
@@ -296,7 +308,7 @@ class Toolkit80211:
                         if essid != '':
                             self.clientProbes[src][essid] = ""
                     else:
-                        # abuse dict behaivor to remove duplicates
+                        # use dict behaivor to remove duplicates
                         if essid != '':
                             self.clientProbes[src] = {essid:""}
         
