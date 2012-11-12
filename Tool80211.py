@@ -182,6 +182,10 @@ class Toolkit80211:
             self.view = {}
             # ap = key{essid},value{bssid,clients}
             # clients = key{mac},value{probelist[]}
+            
+            # dict to store last 5 essids seen for a bssid
+            #key = bssid value=[ssid,ssid....]
+            self.vSSID = {}
 
         @staticmethod
         def pformatMac(hexbytes):
@@ -193,6 +197,22 @@ class Toolkit80211:
             for byte in hexbytes:
                 mac.append(byte.encode('hex'))
             return ':'.join(mac)
+
+        def verifySSID(bssid, uessid):
+            """
+            its possible to get a mangled ssid
+            this allows us to check last 5 seen 
+            to see if they are mangled or its been changed
+            bssid = bssid in hex of ap in question
+            uessid = essid in hex to verify
+            if all 5 dont match return False, else return True
+            """
+            for essid in self.vSSID[bssid]:
+                if uessid != essid:
+                    # blank it out
+                    self.vSSID[bssid] = []
+                    return False
+            return True
 
         def updateClient(self, frame):
             """
@@ -297,6 +317,18 @@ class Toolkit80211:
                         self.ess[essid]=[bssid]
                     #update all info about ap
                     self.apData[bssid] = frame
+                    if bssid in self.vSSID.keys():
+                        ssidList = self.vSSID[bssid]
+                        if len(ssidList) > 3:
+                            # remove first item
+                            ssidList.pop(0)
+                            # append new one to back
+                            ssidList.append(essid)
+                            self.vSSID[bssid] = ssidList
+                        else:
+                            self.vSSID[bssid].append(essid)
+                    else:
+                        self.vSSID[bssid] = [essid]
                     continue
                 elif frame["type"] == 2 and frame["stype"] in range(0,16):
                     #applying to all data packets
