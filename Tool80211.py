@@ -21,7 +21,7 @@ class Toolkit80211:
         interface = string 
         currently assumes all cards are to be opened in monitor mode
         """
-	#print self.chanlock
+        #print self.chanlock
         # open the card up and gain a a context to them
         # create a dict with interface name and context
         try:
@@ -32,11 +32,14 @@ class Toolkit80211:
         # place cards in injection/monitor mode
         self.moniface["ctx"].open_injmon()
         self.moniface["name"] = self.moniface["ctx"].get_vap()
-	self.air = self.Airview(self.moniface)
-	self.air.start()
+        self.air = self.Airview(self.moniface)
+        self.air.start()
 
     def open(self):
-	return self.air
+        """
+        retruns air object
+        """
+        return self.air
 
     def exit(self):
         """
@@ -54,7 +57,7 @@ class Toolkit80211:
             set the channel hopping sequence
             expects lorcon injmon() context
             """
-	    self.lock = 0
+            self.lock = 0
             threading.Thread.__init__(self)
             threading.Thread.daemon = True
             self.iface = interface
@@ -102,9 +105,9 @@ class Toolkit80211:
             returns -1 if channel isnt supported
             #should raise an exception if this is the case
             """
-	    while self.lock == 1:
-		print "!!!!!!!!!!!!!!Waiting for lock...!!!!!!!!!!!!"
-		time.sleep(2)
+        while self.lock == 1:
+            print "!!!!!!!!!!!!!!Waiting for lock...!!!!!!!!!!!!"
+            time.sleep(2)
             if channel in self.hopList:
                 self.iface.set_channel(channel)
                 return 0
@@ -133,6 +136,9 @@ class Toolkit80211:
                         time.sleep(.2)
         
         def run(self):
+            """
+            start the channel hopper
+            """
             self.hop()
 
     class Airview(threading.Thread):
@@ -149,8 +155,7 @@ class Toolkit80211:
             Open up a packet parser for a given interface
             Thread the instance
             """
-	    self.hopper = ""
-
+            self.hopper = ""
             threading.Thread.__init__(self)
             threading.Thread.daemon = True
             # get interface name for use with pylibpcap
@@ -173,12 +178,10 @@ class Toolkit80211:
             self.clientProbes = {}
             # info on clients
             self.clientsExtra = {}
-
-	    #the above works fine, but let's get more efficient
-	    self.view = {}
-	    # ap = key{essid},value{bssid,clients}
-	    # clients = key{mac},value{probelist[]}
-
+            #the above works fine, but let's get more efficient
+            self.view = {}
+            # ap = key{essid},value{bssid,clients}
+            # clients = key{mac},value{probelist[]}
 
         @staticmethod
         def pformatMac(hexbytes):
@@ -266,13 +269,13 @@ class Toolkit80211:
             The airview state vars
             """
             while True:
-		#TODO: we may need to set semaphore here?
-		self.hopper.lock = 1
+                #TODO: we may need to set semaphore here?
+                self.hopper.lock = 1
                 self.channel = self.hopper.current
                 frame = self.rd.parseFrame(
                             self.rd.getFrame())
-		self.hopper.lock = 0
-		#release semaphore here -- we have what we came for
+                self.hopper.lock = 0
+                #release semaphore here -- we have what we came for
                 # beacon frames
                 if frame == None:
                     # we cant parse the frame
