@@ -52,7 +52,12 @@ if __name__ == "__main__":
                 apbssid = ppmac(bssid)
                 # we don't get as many mangled packets now, but every so often...
                 # we don't do mangle detection yet, so for now we deal.
-                print ("%s %s" %(apbssid, lbss[bssid])).encode("utf-8")
+                essid = lbss[bssid]
+                if airmonitor.verifySSID(bssid, essid) is False:
+                    # bad essids, skip printing
+                    continue
+                else:
+                    print ("%s %s" %(apbssid, essid)).encode("utf-8")
 
             """
             Print out the clients and anything they are assoicated to
