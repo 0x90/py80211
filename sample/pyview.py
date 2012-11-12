@@ -45,7 +45,7 @@ if __name__ == "__main__":
             lbss = airmonitor.bss
             # print the current sniffing channel to the screen
             #this will always be 11 right now -- threading bad?
-            #print "Channel %i" %(airmonitor.channel)
+            print "Channel %i" %(airmonitor.channel)
             # print out the access points and their essids
             print "Access point"
             for bssid in lbss.keys():
@@ -53,6 +53,7 @@ if __name__ == "__main__":
                 # we don't get as many mangled packets now, but every so often...
                 # we don't do mangle detection yet, so for now we deal.
                 print ("%s %s" %(apbssid, lbss[bssid])).encode("utf-8")
+
             """
             Print out the clients and anything they are assoicated to
             as well as probes to the screen
