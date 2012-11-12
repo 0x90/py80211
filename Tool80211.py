@@ -105,14 +105,14 @@ class Toolkit80211:
             returns -1 if channel isnt supported
             #should raise an exception if this is the case
             """
-        while self.lock == 1:
-            print "!!!!!!!!!!!!!!Waiting for lock...!!!!!!!!!!!!"
-            time.sleep(2)
-            if channel in self.hopList:
-                self.iface.set_channel(channel)
-                return 0
-            else:
-                return -1
+            while self.lock == 1:
+                print "!!!!!!!!!!!!!!Waiting for lock...!!!!!!!!!!!!"
+                time.sleep(2)
+                if channel in self.hopList:
+                    self.iface.set_channel(channel)
+                    return 0
+                else:
+                    return -1
 
         def hop(self, dwell=.4):
             """
