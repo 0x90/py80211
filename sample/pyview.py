@@ -27,7 +27,7 @@ if __name__ == "__main__":
         mode interface
         """
         interface = Tool80211.Toolkit80211(options.card)
-	airmonitor = interface.open();
+	    airmonitor = interface.open();
         ppmac = airmonitor.pformatMac
         while True:
             """
@@ -44,14 +44,14 @@ if __name__ == "__main__":
             """
             lbss = airmonitor.bss
             # print the current sniffing channel to the screen
-	    #this will always be 11 right now -- threading bad?
+	        #this will always be 11 right now -- threading bad?
             #print "Channel %i" %(airmonitor.channel)
             # print out the access points and their essids
             print "Access point"
             for bssid in lbss.keys():
                 apbssid = ppmac(bssid)
-		# we don't get as many mangled packets now, but every so often...
-		# we don't do mangle detection yet, so for now we deal.
+		        # we don't get as many mangled packets now, but every so often...
+	        	# we don't do mangle detection yet, so for now we deal.
                 print ("%s %s" %(apbssid, lbss[bssid])).encode("utf-8")
             """
             Print out the clients and anything they are assoicated to
