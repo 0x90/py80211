@@ -198,7 +198,7 @@ class Toolkit80211:
                 mac.append(byte.encode('hex'))
             return ':'.join(mac)
 
-        def verifySSID(bssid, uessid):
+        def verifySSID(self, bssid, uessid):
             """
             its possible to get a mangled ssid
             this allows us to check last 5 seen 
