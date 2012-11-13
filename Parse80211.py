@@ -290,6 +290,11 @@ class Parse80211:
             elif dsbits == 3:
                 # we dont do anything with these yet
                 return None
+            else:
+                # mangled ds bits
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
         except IndexError:
             self.mangled = True
             self.mangledcount += 1
