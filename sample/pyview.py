@@ -14,7 +14,7 @@ if __name__ == "__main__":
         help="Interface to sniff and inject from")
     
     #check for correct number of arguments provided
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         parser.print_help()
         print "Calling Example"
         print "python pyview.py -i wlan0"
