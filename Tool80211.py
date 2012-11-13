@@ -258,7 +258,9 @@ class Toolkit80211:
                     #make sure we show its connected to an ap
                     self.clients[src] = bssid
                     if src in self.clientsExtra.keys():
-                        self.clientsExtra[src]['wired'] = True
+                        # dont set a wireless client to wired
+                        if self.clientsExtra[src]['wired'] is not False:
+                            self.clientsExtra[src]['wired'] = True
                     else:
                         self.clientsExtra[src] = {'wired':True}
                 # deal with ipv6 mutlicast
@@ -267,7 +269,9 @@ class Toolkit80211:
                     #make sure we show its connected to an ap
                     self.clients[src] = bssid
                     if src in self.clientsExtra.keys():
-                        self.clientsExtra[src]['wired'] = True
+                        # dont set a wireless client to wired
+                        if self.clientsExtra[src]['wired'] is not False:
+                            self.clientsExtra[src]['wired'] = True
                     else:
                         self.clientsExtra[src] = {'wired':True}
                 else:
