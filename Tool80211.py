@@ -1,5 +1,6 @@
 import threading
 import time
+import sys
 # custom imports
 import Parse80211
 import PyLorcon2
@@ -15,6 +16,11 @@ class iface80211:
     """
     def __init__(self):
         pass
+
+    def openTun(self):
+        """
+        open up a tuntap interface
+        """
 
     def openMon(self, interface):
         """
