@@ -66,7 +66,8 @@ class Toolkit80211:
             # default is 3/10 of a second
             # got the lists from kismet config file
             # thanks dragorn!
-            self.channellist = [1,6,11,14,2,7,3,8,4,9,5,10,36,40,44,48,52,56,60,64,149,153,157,161,165]
+            self.channellist = [1,6,11,14,2,7,3,8,4,9,5,10,
+                36,40,44,48,52,56,60,64,149,153,157,161,165]
             self.hopList = []
             self.current = 0
             self.checkChannels()
