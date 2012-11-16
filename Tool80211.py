@@ -16,7 +16,7 @@ class iface80211:
     def __init__(self):
         pass
 
-    def openMon(self, interface)
+    def openMon(self, interface):
         """
         open a monitor mode interface and create a vap
         interface = string 
@@ -158,13 +158,15 @@ class Airview(threading.Thread):
         interface = interface as string
         if mon = True then interface = to the dicitionary object from iface80211
         """
+        self.stop = False
         self.hopper = ""
         threading.Thread.__init__(self)
         threading.Thread.daemon = True
         #create monitor mode interface
         if mon is False:
-            intf = iface80211().openMon(interface)
-            monif = intf.getMonmode()
+            self.intf = iface80211()
+            self.intf.openMon(interface)
+            monif = self.intf.getMonmode()
         else:
             monif = interface
         # get interface name for use with pylibpcap
@@ -301,7 +303,7 @@ class Airview(threading.Thread):
         Grab a packet, call the parser then update
         The airview state vars
         """
-        while True:
+        while self.stop is False:
             #TODO: we may need to set semaphore here?
             self.hopper.lock = 1
             self.channel = self.hopper.current
@@ -399,3 +401,11 @@ class Airview(threading.Thread):
         self.hopper = Toolkit80211.ChannelHop(self.ctx)
         self.hopper.start()
         self.parse()
+    
+    def stop(self):
+        """
+        stop the parser
+        """
+        self.stop = True
+        self.intf.exit()
+        
