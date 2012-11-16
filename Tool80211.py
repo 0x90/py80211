@@ -1,6 +1,8 @@
 import threading
 import time
 import sys
+import os
+from fcntl  import ioctl
 # custom imports
 import Parse80211
 import PyLorcon2
@@ -8,7 +10,6 @@ import PyLorcon2
 #debug imports
 import pdb
 import sys
-import os
 
 class iface80211:
     """
@@ -17,10 +18,29 @@ class iface80211:
     def __init__(self):
         pass
 
+    def checkTun(self, path):
+        """
+        check for tuntap support
+        """
+        return os.path.isfile(path)
+    
     def openTun(self):
         """
         open up a tuntap interface
+        path is /dev/net/tun in TAP (ether) mode
+        returns false if failed
         """
+        path = "/dev/net/tun"
+        if self.checkTune(path) not False:
+            # next 3 lines taken from wifi-tap
+            f = os.open(path, os.O_RDWR)
+            ifs = ioctl(f, TUNSETIFF, struct.pack("16sH", "wj%d", TUNMODE))
+            # return interface name
+            return ifs[:16].strip("\x00")
+            # commented out...  for now!
+            #print "Interface %s created. Configure it and use it" % ifname
+        else:
+            return False
 
     def openMon(self, interface):
         """
