@@ -398,11 +398,11 @@ class Airview(threading.Thread):
         start the parser
         """
         # need to start channel hopping here
-        self.hopper = Toolkit80211.ChannelHop(self.ctx)
+        self.hopper = ChannelHop(self.ctx)
         self.hopper.start()
         self.parse()
     
-    def stop(self):
+    def kill(self):
         """
         stop the parser
         """
