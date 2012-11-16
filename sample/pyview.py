@@ -26,8 +26,8 @@ if __name__ == "__main__":
         create an instance and create vap and monitor
         mode interface
         """
-        interface = Tool80211.Toolkit80211(options.card)
-        airmonitor = interface.open()
+        airmonitor = Tool80211.Airview(options.card)
+        airmonitor.start()
         ppmac = airmonitor.pformatMac
         while True:
             """
@@ -88,8 +88,8 @@ if __name__ == "__main__":
                     pass
                     print pclient, plclient
     except KeyboardInterrupt:
-        print "\nbye"
-        interface.exit()
+        print "\nbye\n"
+        airmonitor.kill()
         sys.exit(0)
 
 
