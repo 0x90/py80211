@@ -31,7 +31,7 @@ class iface80211:
         returns false if failed
         """
         path = "/dev/net/tun"
-        if self.checkTune(path) not False:
+        if self.checkTune(path) is not False:
             # next 3 lines taken from wifi-tap
             f = os.open(path, os.O_RDWR)
             ifs = ioctl(f, TUNSETIFF, struct.pack("16sH", "wj%d", TUNMODE))
