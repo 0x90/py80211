@@ -261,6 +261,8 @@ class Parse80211:
                 else:
                     parsedFrame["type"] = ftype
                     parsedFrame["stype"] = stype
+                    # strip the headers
+                    parsedFrame["raw"] = data[rt:]
                 return parsedFrame
             else:
                 # we dont have a parser for the packet
