@@ -135,11 +135,11 @@ class ChannelHop(threading.Thread):
         while self.lock == 1:
             print "!!!!!!!!!!!!!!Waiting for lock...!!!!!!!!!!!!"
             time.sleep(2)
-            if channel in self.hopList:
-                self.iface.set_channel(channel)
-                return 0
-            else:
-                return -1
+        if channel in self.hopList:
+            self.iface.set_channel(channel)
+            return 0
+        else:
+            return -1
 
     def hop(self, dwell=.4):
         """
