@@ -3,9 +3,18 @@ import time
 import os
 import optparse
 # update the system path to look for Tool80211 one directory up
-sys.path.append('../')
-import Tool80211
-
+try:
+    import Tool80211
+except ImportError:
+    # Tool80211 not installed
+    # assuming were running out of source directory
+    sys.path.append('../')
+    try:
+        import Tool80211
+    except ImportError, e:
+        print e
+        sys.exit(-1)
+    
 
 if __name__ == "__main__":
     print "Py80211 Sample Application"
