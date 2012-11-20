@@ -211,6 +211,18 @@ class Parse80211:
              15: self.data,  # QoS + CF-ack (no data)
              }}
 
+        self.packetBcast = {
+        "oldbcast": '\x00\x00\x00\x00\x00\x00',  # old broadcast address
+        "l2": '\xff\xff\xff\xff\xff\xff',     # layer 2 mac broadcast
+        "ipv6m": '\x33\x33\x00\x00\x00\x16',  # ipv6 multicast
+        "stp": '\x01\x80\xc2\x00\x00\x00',    # Spanning Tree multicast 802.1D
+        "cdp": '\x01\x00\x0c\xcc\xcc\xcc',    # CDP/VTP mutlicast address
+        "cstp": '\x01\x00\x0C\xCC\xCC\xCD',   # Cisco shared STP Address
+        "stpp": '\x01\x80\xc2\x00\x00\x08',   # Spanning Tree multicast 802.1AD
+        "oam": '\x01\x80\xC2\x00\x00\x02',    # oam protocol 802.3ah
+        "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
+        "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
+        }
         self.lp = pcap.pcapObject()
         # check what these numbers mean
         self.lp.open_live(dev, 1600, 0 ,100)
@@ -218,7 +230,19 @@ class Parse80211:
             self.rth = True
         else:
             self.rth = False
-    
+   
+    def isBcast(self, mac):
+        """
+        returns boolen if mac is a broadcast/multicast mac
+        """
+        if mac in self.packetBcast.values():
+            return True
+        # deal with ipv6multi cast addresses
+        elif mac[:2] == self.packetBcast["ipv6m"][:2]:
+            return True
+        else:
+            return False
+
     def placedef(self, data):
         print data[18].encode('hex')
         print "No parser for subtype\n"
