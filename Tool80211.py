@@ -2,7 +2,8 @@ import threading
 import time
 import sys
 import os
-from fcntl  import ioctl
+import fcntl
+import struct
 # custom imports
 import Parse80211
 import PyLorcon2
@@ -16,14 +17,21 @@ class iface80211:
     handle 80211 interfacs
     """
     def __init__(self):
-        pass
+        self.TUNSETIFF = 0x400454ca
+        self.TUNSETOWNER = self.TUNSETIFF + 2
+        self.IFF_TUN = 0x0001
+        self.IFF_TAP = 0x0002
+        self.IFF_NO_PI = 0x1000
+
 
     def checkTun(self, path):
         """
         check for tuntap support
         """
-        return os.path.isfile(path)
-    
+        # doesnt work
+        #return os.path.isfile(path)
+        return True
+
     def openTun(self):
         """
         open up a tuntap interface
@@ -31,16 +39,37 @@ class iface80211:
         returns false if failed
         """
         path = "/dev/net/tun"
-        if self.checkTune(path) is not False:
-            # next 3 lines taken from wifi-tap
-            f = os.open(path, os.O_RDWR)
-            ifs = ioctl(f, TUNSETIFF, struct.pack("16sH", "wj%d", TUNMODE))
+        if self.checkTun(path) is not False:
+            self.tun = os.open(path, os.O_RDWR)
+            ifr = struct.pack("16sH", "tun%d", self.IFF_TAP | self.IFF_NO_PI)
+            ifs = fcntl.ioctl(self.tun, self.TUNSETIFF, ifr)
+            #fcntl.ioctl(self.tun, self.TUNSETOWNER, 1000)
             # return interface name
             return ifs[:16].strip("\x00")
             # commented out...  for now!
             #print "Interface %s created. Configure it and use it" % ifname
         else:
             return False
+    
+    def inject(self, packet):
+        """
+        send bytes to pylorcon interface
+        """
+        if self.moniface is not None:
+            self.moniface['ctx'].sendbytes(packet)
+
+    
+    def readTun(self):
+        """
+        read a packet from tun interface
+        """
+        return os.read(self.tun, 1526)
+
+    def writeTun(self, packet):
+        """
+        write a packet to tun interface
+        """
+        os.write(self.tun, packet)
 
     def openMon(self, interface):
         """
