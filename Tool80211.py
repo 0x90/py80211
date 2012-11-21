@@ -219,10 +219,11 @@ class Airview(threading.Thread):
         self.view = {}
         # ap = key{essid},value{bssid,clients}
         # clients = key{mac},value{probelist[]}
-        
         # dict to store last 5 essids seen for a bssid
         #key = bssid value=[ssid,ssid....]
         self.vSSID = {}
+        # client to ap relationship
+        self.capr = {}
 
     @staticmethod
     def pformatMac(hexbytes):
@@ -374,14 +375,15 @@ class Airview(threading.Thread):
                     # use dict behaivor to remove duplicates
                     if essid != '':
                         self.clientProbes[src] = {essid:""}
-    
+            # update client ap relationships
+            self.getCapr()
+
     def getCapr(self, wiredc=False):
         """
         Parse clients list to build current list 
         of bssids and their clients
         set wiredc to True to include wired devices discovered by broadcast
         """
-        self.capr = {}
         for client in self.clients.keys():
             # include or exclude wired devices
             if wiredc is False:
