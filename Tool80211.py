@@ -422,10 +422,10 @@ class Airview(threading.Thread):
                     continue
             bssid = self.clients[client]
             if bssid != "Not Associated":
-                if bssid not in self.capar.keys():
-                    self.capar[bssid] = [client]
+                if bssid not in self.capr.keys():
+                    self.capr[bssid] = [client]
                 else:
-                    self.capar[bssid].append(client)
+                    self.capr[bssid].append(client)
 
     def getProbes(self, cmac):
         """
