@@ -223,14 +223,24 @@ class Parse80211:
         "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
         "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
         }
-        self.lp = pcap.pcapObject()
+        
+        (self.lp, self.rth) = self.openSniff(dev)
+        
+
+    def openSniff(self, dev):
+        """
+        open up a libpcap object
+        return object and radio tap boolen
+        """
+        lp = pcap.pcapObject()
         # check what these numbers mean
-        self.lp.open_live(dev, 1600, 0 ,100)
-        if self.lp.datalink() == 127:
-            self.rth = True
+        lp.open_live(dev, 1600, 0 ,100)
+        if lp.datalink() == 127:
+            rth = True
         else:
-            self.rth = False
-   
+            rth = False
+        return lp, rth
+        
     def isBcast(self, mac):
         """
         returns boolen if mac is a broadcast/multicast mac
