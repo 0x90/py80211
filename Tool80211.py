@@ -45,9 +45,13 @@ class iface80211:
             ifs = fcntl.ioctl(self.tun, self.TUNSETIFF, ifr)
             #fcntl.ioctl(self.tun, self.TUNSETOWNER, 1000)
             # return interface name
-            return ifs[:16].strip("\x00")
+            ifname = ifs[:16].strip("\x00")
             # commented out...  for now!
-            #print "Interface %s created. Configure it and use it" % ifname
+            print "Interface %s created. Configure it and use it" % ifname
+            # put interface up
+            os.system("ifconfig %s up" %(ifname))
+            # return interface name
+            return ifname
         else:
             return False
     
