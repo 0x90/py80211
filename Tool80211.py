@@ -60,7 +60,7 @@ class iface80211:
         send bytes to pylorcon interface
         """
         if self.moniface is not None:
-            self.moniface['ctx'].sendbytes(packet)
+            self.moniface['ctx'].send_bytes(packet)
 
     
     def readTun(self):
