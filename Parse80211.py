@@ -254,7 +254,7 @@ class Parse80211:
             return False
 
     def placedef(self, data):
-        print data[18].encode('hex')
+        print data[self.rt].encode('hex')
         print "No parser for subtype\n"
 
     def getFrame(self):
@@ -271,15 +271,15 @@ class Parse80211:
         if frame != None:
             data = frame[1]
             if self.rth:
-                rt = struct.unpack('h', data[2:4])[0]
+                self.rt = struct.unpack('h', data[2:4])[0]
             else:
-                rt = 0
+                self.rt = 0
         else:
             return None
         # determine frame subtype
         # subtype byte should be one off radio tap headers
-        #subtype = data[rt:rt +1]
-        ptype = ord(data[rt])
+        #subtype = data[self.rt:self.rt +1]
+        ptype = ord(data[self.rt])
         # wipe out all bits we dont need
         ftype = (ptype >> 2) & 3
         stype = ptype >> 4
@@ -288,7 +288,7 @@ class Parse80211:
             if stype in self.parser[ftype].keys():
                 # will return -1 if packet is mangled
                 # none if we cant parse it
-                parsedFrame = self.parser[ftype][stype](data[rt:])
+                parsedFrame = self.parser[ftype][stype](data[self.rt:])
                 # packet is mangled some how return the error
                 if parsedFrame in [None, -1]:
                     return parsedFrame
@@ -296,7 +296,8 @@ class Parse80211:
                     parsedFrame["type"] = ftype
                     parsedFrame["stype"] = stype
                     # strip the headers
-                    parsedFrame["raw"] = data[rt:]
+                    parsedFrame['rtap'] = self.rt
+                    parsedFrame["raw"] = data
                 return parsedFrame
             else:
                 # we dont have a parser for the packet
