@@ -223,23 +223,26 @@ class Parse80211:
         "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
         "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
         }
-        
-        (self.lp, self.rth) = self.openSniff(dev)
-        
+        self.openSniff(dev)
 
     def openSniff(self, dev):
         """
         open up a libpcap object
         return object and radio tap boolen
         """
-        lp = pcap.pcapObject()
+        self.lp = pcap.pcapObject()
         # check what these numbers mean
-        lp.open_live(dev, 1600, 0 ,100)
-        if lp.datalink() == 127:
-            rth = True
+        self.lp.open_live(dev, 1600, 0 ,100)
+        if self.lp.datalink() == 127:
+            self.rth = True
+            # snag a packet to look at header, this should always be a
+            # packet that wasnt injected so should have a rt header
+            packet = self.getFrame()[1]
+            # set known header size
+            self.headsize = struct.unpack('h', packet[2:4])[0]
         else:
-            rth = False
-        return lp, rth
+            self.rth = False
+        return
         
     def isBcast(self, mac):
         """
@@ -272,6 +275,10 @@ class Parse80211:
             data = frame[1]
             if self.rth:
                 self.rt = struct.unpack('h', data[2:4])[0]
+                # check to see if packet really has a radio tap header
+                # lorcon injected packets wont
+                if self.rt != self.headsize:
+                    self.rt = 0
             else:
                 self.rt = 0
         else:
