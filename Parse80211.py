@@ -239,7 +239,9 @@ class Parse80211:
             # snag a packet to look at header, this should always be a
             # packet that wasnt injected so should have a rt header
             while packet is None:
-                packet = self.getFrame()[1]
+                frame = self.getFrame()
+                if frame is not None:
+                    packet = frame[1]
             # set known header size
             self.headsize = struct.unpack('h', packet[2:4])[0]
         else:
