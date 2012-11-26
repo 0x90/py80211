@@ -259,6 +259,7 @@ class Parse80211:
             return False
 
     def placedef(self, data):
+        pass
         print data[self.rt].encode('hex')
         print "No parser for subtype\n"
 
