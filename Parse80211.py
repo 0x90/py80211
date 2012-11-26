@@ -260,8 +260,8 @@ class Parse80211:
 
     def placedef(self, data):
         pass
-        print data[self.rt].encode('hex')
-        print "No parser for subtype\n"
+        #print data[self.rt].encode('hex')
+        #print "No parser for subtype\n"
 
     def getFrame(self):
         """
