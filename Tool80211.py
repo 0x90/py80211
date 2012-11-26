@@ -429,7 +429,8 @@ class Airview(threading.Thread):
                 if bssid not in self.capr.keys():
                     self.capr[bssid] = [client]
                 else:
-                    self.capr[bssid].append(client)
+                    if client not in self.capr[bssid]:
+                        self.capr[bssid].append(client)
 
     def getProbes(self, cmac):
         """
