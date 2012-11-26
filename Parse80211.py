@@ -230,6 +230,7 @@ class Parse80211:
         open up a libpcap object
         return object and radio tap boolen
         """
+        packet = None
         self.lp = pcap.pcapObject()
         # check what these numbers mean
         self.lp.open_live(dev, 1600, 0 ,100)
@@ -237,7 +238,8 @@ class Parse80211:
             self.rth = True
             # snag a packet to look at header, this should always be a
             # packet that wasnt injected so should have a rt header
-            packet = self.getFrame()[1]
+            while packet is None:
+                packet = self.getFrame()[1]
             # set known header size
             self.headsize = struct.unpack('h', packet[2:4])[0]
         else:
