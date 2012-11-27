@@ -428,7 +428,6 @@ class Parse80211:
             src = data[10:16]  # source addr 6 bytes
             bssid = data[16:22]  # bssid addr 6 bytes
             # parse the IE tags
-            # assuming we have 12 byte paramaters
             self.IE.parseIE(data[36:])
             if "ssid" not in self.IE.tagdata.keys():
                 essid = ""
