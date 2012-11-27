@@ -37,10 +37,11 @@ class IeTag80211:
                 blen = ord(rbytes[1]) + 2  # byte len of ie tag
                 if fbyte in self.parser.keys():
                     prebytes = rbytes[0:blen]
-                    if blen != len(prebytes):
+                    if blen == len(prebytes):
+                        self.parser[fbyte](prebytes)
+                    else:
                         # mangled packets
                         return -1
-                    self.parser[fbyte](prebytes)
                 else:
                     # we have no parser for the ie tag
                     self.tagdata["unparsed"].append(rbytes[0:blen])
