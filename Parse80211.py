@@ -276,8 +276,10 @@ class Parse80211:
         Determine the type of frame and
         choose the right parser
         """
-        if frame != None:
+        if frame is not None:
             data = frame[1]
+            if data is None:
+                return None
             if self.rth:
                 self.rt = struct.unpack('h', data[2:4])[0]
                 # check to see if packet really has a radio tap header
