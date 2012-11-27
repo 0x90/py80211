@@ -372,11 +372,15 @@ class Parse80211:
             # these seem to have it...
             self.IE.parseIE(data[36:])
             if "ssid" not in self.IE.tagdata.keys():
-                essid = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 essid = self.IE.tagdata["ssid"]
             if "channel" not in self.IE.tagdata.keys():
-                channel = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 channel = self.IE.tagdata["channel"]
         except IndexError:
@@ -401,11 +405,15 @@ class Parse80211:
             # possible bug, no fixed 12 byte paramaters before ie tags?
             self.IE.parseIE(data[24:])
             if "ssid" not in self.IE.tagdata.keys():
-                essid = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 essid = self.IE.tagdata["ssid"]
             if "channel" not in self.IE.tagdata.keys():
-                channel = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 channel = self.IE.tagdata["channel"]
         except IndexError:
