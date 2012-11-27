@@ -430,11 +430,15 @@ class Parse80211:
             # parse the IE tags
             self.IE.parseIE(data[36:])
             if "ssid" not in self.IE.tagdata.keys():
-                essid = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 essid = self.IE.tagdata["ssid"]
             if "channel" not in self.IE.tagdata.keys():
-                channel = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 channel = self.IE.tagdata["channel"]
         except IndexError:
