@@ -125,7 +125,6 @@ class packetGenerator:
         packet.append('\x10\x00')    # seq number set to 1
         if ptype == 'assos':         # assoication packet type we need to change a few bits
             packet.append(self.randomDictObj(self.capabilities)) # capabilities field
-            #packet.append(randCapaField()) # capabilties field
             packet.append('\x01\x00')   # listen interval
             packet.append('\x00\x00')   # set broadcast bssid
         else:
@@ -272,16 +271,6 @@ class packetGenerator:
         """
         return a2b_hex(mac.replace(":", ""))
     
-    def randCapaField(self):
-        """
-        #set for removal
-        Generate a random capabilities field for 
-        assoication/reassoication packets
-        """
-        return self.capabilities.values()[
-            random.randrange(
-                0,len(self.capabilities), 1)]
-
     def randDeauthReason(self):
         """
         #set for removal
