@@ -71,9 +71,6 @@ class packetGenerator:
         channel is expected as int, no check is done if its a valid 802.11 channel
         """
         packets = []
-        destination_addr = self.convertHex(destination_addr)
-        source_addr = self.convertHex(source_addr)
-        bss_id_addr = self.convertHex(bss_id_addr)
         channel = int(channel)
 
         #maybe flag all bits?
@@ -267,6 +264,7 @@ class packetGenerator:
     
     def convertHex(self, mac):
         """
+        # set for removal? 
         convert a mac address to hex
         """
         return a2b_hex(mac.replace(":", ""))
