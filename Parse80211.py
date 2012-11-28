@@ -36,7 +36,12 @@ class IeTag80211:
                 # add two to account for size byte and tag num byte
                 blen = ord(rbytes[1]) + 2  # byte len of ie tag
                 if fbyte in self.parser.keys():
-                    self.parser[fbyte](rbytes[0:blen])
+                    prebytes = rbytes[0:blen]
+                    if blen == len(prebytes):
+                        self.parser[fbyte](prebytes)
+                    else:
+                        # mangled packets
+                        return -1
                 else:
                     # we have no parser for the ie tag
                     self.tagdata["unparsed"].append(rbytes[0:blen])
@@ -368,11 +373,15 @@ class Parse80211:
             # these seem to have it...
             self.IE.parseIE(data[36:])
             if "ssid" not in self.IE.tagdata.keys():
-                essid = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 essid = self.IE.tagdata["ssid"]
             if "channel" not in self.IE.tagdata.keys():
-                channel = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 channel = self.IE.tagdata["channel"]
         except IndexError:
@@ -397,11 +406,15 @@ class Parse80211:
             # possible bug, no fixed 12 byte paramaters before ie tags?
             self.IE.parseIE(data[24:])
             if "ssid" not in self.IE.tagdata.keys():
-                essid = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 essid = self.IE.tagdata["ssid"]
             if "channel" not in self.IE.tagdata.keys():
-                channel = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 channel = self.IE.tagdata["channel"]
         except IndexError:
@@ -424,14 +437,17 @@ class Parse80211:
             src = data[10:16]  # source addr 6 bytes
             bssid = data[16:22]  # bssid addr 6 bytes
             # parse the IE tags
-            # assuming we have 12 byte paramaters
             self.IE.parseIE(data[36:])
             if "ssid" not in self.IE.tagdata.keys():
-                essid = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 essid = self.IE.tagdata["ssid"]
             if "channel" not in self.IE.tagdata.keys():
-                channel = ""
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             else:
                 channel = self.IE.tagdata["channel"]
         except IndexError:
