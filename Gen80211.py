@@ -114,8 +114,8 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:bptype 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = self.genPtype(bptype) # packet subtype
-        packet.append('\x3a\x0a')    # duration
+        packet = self.genPtype(bptype) # packet subtype & flags
+        packet.append('\x00\x00')        # duration
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
@@ -217,8 +217,8 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = self.genPtype(btype)  # subtype
-        packet.append('\x00\x00')    # flags
+        packet = self.genPtype(btype)  # subtype & flags
+        packet.append('\x00\x00')        # duration
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
@@ -232,8 +232,8 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = self.genPtype(btype) # subtype
-        packet.append('\x10\x10')    # flags trying 1 and 1
+        packet = self.genPtype(btype) # subtype & flags
+        packet.append('\x00\x00')        # duration
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
