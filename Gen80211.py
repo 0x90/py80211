@@ -171,7 +171,7 @@ class packetGenerator:
         if allow_bcast == True:
             # broadcast packets will be sent
             # tx two packets with random reasons one too bssid and one from bssid
-            for btype in ['deauth','disass']: 
+            for btype in frameType: 
                 packets.append([
                     self.deauthBuildPacket(
                         self.packetTypes[btype],
