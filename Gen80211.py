@@ -15,12 +15,12 @@ class packetGenerator:
         """
         # packet headers are in little endian
         self.packetTypes = {
-                "deauth": '\xc0\x00',  # deauthentication packet header
-                "disass": '\xa0\x00',  # disassoication packet header
-                "auth": '\xb0\x00',    # authentication packet header
-                "assos": '\x00\x00',   # association packet header
-                "data": ' \x02\x00',   # data packet header
-                "reass": '\x30\x00'    # reassoication packet header
+                "deauth": [0,12],  # deauthentication packet header
+                "disass": [0,10],  # disassoication packet header
+                "auth":   [0,11],  # authentication packet header
+                "assos":  [0,0],   # association packet header
+                "data":   [2,0],   # data packet header
+                "reass":  [0,3]    # reassoication packet header
                 }
         # the oldbcast address may not always work
         # note this also contains some multi cast addresses
@@ -117,7 +117,7 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:bptype 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = [bptype]            # packet subtype
+        packet = self.genPtype(bptype) # packet subtype
         packet.append('\x3a\x0a')    # duration
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
@@ -150,7 +150,7 @@ class packetGenerator:
         bss_id_addr = self.convertHex(bss_id_addr)
         channel = int(channel)
         if allow_bcast == False:
-            #broadcast packets will not be sent
+            # broadcast packets will not be sent
             for btype in frameType:  # tx two packets with random reasons one two and one from
                 packets.append([
                     self.deauthBuildPacket(
@@ -174,7 +174,8 @@ class packetGenerator:
 
         if allow_bcast == True:
             # broadcast packets will be sent
-            for btype in ['deauth','disass']:  # tx two packets with random reasons one too bssid and one from bssid
+            # tx two packets with random reasons one too bssid and one from bssid
+            for btype in ['deauth','disass']: 
                 packets.append([
                     self.deauthBuildPacket(
                         self.packetTypes[btype],
@@ -193,7 +194,8 @@ class packetGenerator:
                         self.randomDictObj(self.deauthPacketReason)
                         ),
                     channel])
-                for bcast in self.packetBcast:#send bcast packets one too and one from
+                # send bcast packets one too and one from
+                for bcast in self.packetBcast:
                     packets.append([
                         self.deauthBuildPacket(
                             self.packetTypes[btype],   # packet type
@@ -219,7 +221,7 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = [btype]  #subtype
+        packet = self.genPtype(btype)  # subtype
         packet.append('\x00\x00')    # flags
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
@@ -234,7 +236,7 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = [btype]  #subtype
+        packet = self.genPtype(btype) # subtype
         packet.append('\x10\x10')    # flags trying 1 and 1
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
@@ -303,6 +305,25 @@ class packetGenerator:
         fbit = int(bits[0:8], 2)
         sbit = int(bits[8:16], 2)
         return chr(fbit) + chr(sbit)
+    
+    def genPtype(self, ptype, fromds = False):
+        """
+        generate a framecontrol in little endian
+        ptype is list [type,subtype] as int
+        if fromds is false then packet is from client to ap
+        if fromds is true then packet is from ap to clinet
+        returns 2 bytes as string
+        """
+        # set the type
+        pbyte = 0 | int(ptype[0]) << 2
+        # set the subtype
+        pbyte = pbyte | int(ptype[1]) << 4
+        if fromds is True:
+            flags = '\x02'
+        else:
+            flags = '\x01'
+        return pbyte + flags
+
 
 if __name__ == "__main__":
   for bits in packetGenerator().capabilities:
