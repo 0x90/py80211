@@ -141,9 +141,6 @@ class packetGenerator:
         a list of frames types to send, these can be overloaded
         """
         packets = []
-        destination_addr = destination_addr
-        source_addr = source_addr
-        bss_id_addr = bss_id_addr
         channel = int(channel)
         if allow_bcast == False:
             # broadcast packets will not be sent
