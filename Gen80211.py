@@ -244,13 +244,16 @@ class packetGenerator:
 
     def randomDictObj(self, dictObject):
         """
-        provide a random object value from a given dictionary
+        provide a random object value from a given dictionary or list
         dictObject = Dictionary object to pull random values from
         """
-        dictObjectList = dictObject.values()
+        if type(dictObject) is not list: 
+            dictObjectList = dictObject.values()
+        else:
+            dictObjectList = dictObject
         return dictObjectList[
             random.randrange(0,
-                len(dictObjectList, 1))]
+                len(dictObjectList), 1)]
 
     def randomMac(self):
         """
