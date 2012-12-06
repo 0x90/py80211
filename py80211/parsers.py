@@ -1,10 +1,8 @@
 import pcap
 import sys
 import struct
-import pdb
 
-
-class InformationElements:
+class InformationElements(object):
     """
     Parsing 802.11 frame information elements
     """
@@ -29,7 +27,7 @@ class InformationElements:
         rbytes = string of bytes to parse
         """
         self.tagdata = {"unparsed":[]}  # dict to return parsed tags
-        offsets = {}
+        # offsets = {} # TODO
         while len(rbytes) > 0:
             try:
                 fbyte = rbytes[0]
@@ -169,7 +167,7 @@ class InformationElements:
             # mangled packets
             return -1
 
-class Common:
+class Common(object):
     """
     Class file for parsing
     several common 802.11 frames

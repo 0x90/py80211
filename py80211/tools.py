@@ -8,11 +8,7 @@ import struct
 from py80211 import parsers
 import PyLorcon2
 
-#debug imports
-import pdb
-import sys
-
-class Interface:
+class Interface(object):
     """
     handle 80211 interfacs
     """
