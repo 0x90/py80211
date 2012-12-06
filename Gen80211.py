@@ -313,7 +313,7 @@ class packetGenerator:
             flags = '\x02'
         else:
             flags = '\x01'
-        return pbyte + flags
+        return chr(pbyte) + flags
 
 
 if __name__ == "__main__":
