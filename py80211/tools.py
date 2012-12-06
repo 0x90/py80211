@@ -5,14 +5,14 @@ import os
 import fcntl
 import struct
 # custom imports
-import Parse80211
+from py80211 import parsers
 import PyLorcon2
 
 #debug imports
 import pdb
 import sys
 
-class iface80211:
+class Interface:
     """
     handle 80211 interfacs
     """
@@ -54,7 +54,7 @@ class iface80211:
             return ifname
         else:
             return False
-    
+
     def inject(self, packet):
         """
         send bytes to pylorcon interface
@@ -62,7 +62,7 @@ class iface80211:
         if self.moniface is not None:
             self.moniface['ctx'].send_bytes(packet)
 
-    
+
     def readTun(self):
         """
         read a packet from tun interface
@@ -78,7 +78,7 @@ class iface80211:
     def openMon(self, interface):
         """
         open a monitor mode interface and create a vap
-        interface = string 
+        interface = string
         currently assumes all cards are to be opened in monitor mode
         """
         # open the card up and gain a a context to them
@@ -133,7 +133,7 @@ class ChannelHop(threading.Thread):
 
     def checkChannels(self):
         """
-        card drivesr suck, determine what channels 
+        card drivesr suck, determine what channels
         a card supports before we start hopping
         """
         # try setting 802.11ab channels first
@@ -145,7 +145,7 @@ class ChannelHop(threading.Thread):
             except PyLorcon2.Lorcon2Exception:
                 continue
             self.hopList.append(ch)
-    
+
     def pause(self):
         """
         Pause the channel hopping
@@ -157,7 +157,7 @@ class ChannelHop(threading.Thread):
         Unpause the channel hopping
         """
         self.pause = False
-    
+
     def setchannel(self, channel):
         """
         Set a single channel
@@ -194,7 +194,7 @@ class ChannelHop(threading.Thread):
                     time.sleep(dwell)
                 else:
                     time.sleep(.2)
-    
+
     def run(self):
         """
         start the channel hopper
@@ -215,7 +215,7 @@ class Airview(threading.Thread):
         Open up a packet parser for a given interface and create monitor mode interface
         Thread the instance
         interface = interface as string
-        if mon = True then interface = to the dicitionary object from iface80211
+        if mon = True then interface = to the dicitionary object from the interface
         """
         self.stop = False
         self.hopper = ""
@@ -223,7 +223,7 @@ class Airview(threading.Thread):
         threading.Thread.daemon = True
         #create monitor mode interface
         if mon is False:
-            self.intf = iface80211()
+            self.intf = Interface()
             self.intf.openMon(interface)
             monif = self.intf.getMonmode()
         else:
@@ -233,7 +233,7 @@ class Airview(threading.Thread):
         # get context for dealing with channel hopper
         self.ctx = monif["ctx"]
         # open up a parser
-        self.rd = Parse80211.Parse80211(self.iface)
+        self.rd = parsers.Common(self.iface)
         # key = bssid, value = essid
         self.bss = {}
         # load up latest beacon packet for an AP
@@ -261,7 +261,7 @@ class Airview(threading.Thread):
     @staticmethod
     def pformatMac(hexbytes):
         """
-        Take in hex bytes and pretty format them 
+        Take in hex bytes and pretty format them
         to the screen in the xx:xx:xx:xx:xx:xx format
         """
         mac = []
@@ -272,7 +272,7 @@ class Airview(threading.Thread):
     def verifySSID(self, bssid, uessid):
         """
         its possible to get a mangled ssid
-        this allows us to check last 5 seen 
+        this allows us to check last 5 seen
         to see if they are mangled or its been changed
         bssid = bssid in hex of ap in question
         uessid = essid in hex to verify
@@ -413,7 +413,7 @@ class Airview(threading.Thread):
 
     def getCapr(self, wiredc=False):
         """
-        Parse clients list to build current list 
+        Parse clients list to build current list
         of bssids and their clients
         set wiredc to True to include wired devices discovered by broadcast
         """
@@ -434,7 +434,7 @@ class Airview(threading.Thread):
 
     def getProbes(self, cmac):
         """
-        return a list of probe requests 
+        return a list of probe requests
         for a given client
         """
         if cmac in self.clientProbes.keys():
@@ -450,7 +450,7 @@ class Airview(threading.Thread):
         self.hopper = ChannelHop(self.ctx)
         self.hopper.start()
         self.parse()
-    
+
     def kill(self):
         """
         stop the parser

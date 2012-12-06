@@ -4,7 +4,7 @@ import struct
 import pdb
 
 
-class IeTag80211:
+class InformationElements:
     """
     Parsing 802.11 frame information elements
     """
@@ -49,7 +49,7 @@ class IeTag80211:
             except IndexError:
                 # mangled packets
                 return -1
-       
+
     def exrates(self, rbytes):
         """
         parses extended supported rates
@@ -169,7 +169,7 @@ class IeTag80211:
             # mangled packets
             return -1
 
-class Parse80211:
+class Common:
     """
     Class file for parsing
     several common 802.11 frames
@@ -185,7 +185,7 @@ class Parse80211:
         # number of mangled packets seen
         self.mangledcount = 0
         # create ie tag parser
-        self.IE = IeTag80211()
+        self.IE = InformationElements()
         self.parser = {0:{  # managment frames
             0: self.placedef,   # assoication request
             1: self.placedef,   # assoication response
@@ -252,7 +252,7 @@ class Parse80211:
         else:
             self.rth = False
         return
-        
+
     def isBcast(self, mac):
         """
         returns boolen if mac is a broadcast/multicast mac
@@ -324,7 +324,7 @@ class Parse80211:
         else:
             # we dont have a parser for the packet
             return None
-    
+
     def data(self, data):
         """
         parse the src,dst,bssid from a data frame
@@ -388,9 +388,9 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"bssid":bssid, "essid":essid, "src":src, 
+        return {"bssid":bssid, "essid":essid, "src":src,
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
-    
+
     def probeReq(self, data):
         """
         Parse out probe requests
@@ -421,9 +421,9 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"bssid":bssid, "essid":essid, "src":src, 
+        return {"bssid":bssid, "essid":essid, "src":src,
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
-    
+
     def beacon(self, data):
         """
         Parse out beacon packets
@@ -454,11 +454,11 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"bssid":bssid, "essid":essid, "src":src, "dst":dst, 
+        return {"bssid":bssid, "essid":essid, "src":src, "dst":dst,
             "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
 
 if __name__ == "__main__":
-    x = Parse80211(sys.argv[1])
+    x = Common(sys.argv[1])
     while True:
         frame = x.parseFrame(x.getFrame())
         #if frame != None:
