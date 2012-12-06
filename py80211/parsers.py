@@ -1,10 +1,13 @@
+"""
+    Parsers for the py80211 project
+"""
 import pcap
 import sys
 import struct
 
 class InformationElements(object):
     """
-    Parsing 802.11 frame information elements
+        Parsing 802.11 frame Information Elements
     """
     def __init__(self):
         """
@@ -17,9 +20,9 @@ class InformationElements(object):
             "\x03": self.channel,  # channel tag parser
             "\x30": self.rsn,  # rsn tag parser
             "\x32": self.exrates  # extended rates tag parser
-                      }
+            }
 
-    def parseIE(self, rbytes):
+    def parse_ie(self, rbytes):
         """
         takes string of raw bytes splits them into tags
         passes those tags to the correct parser
@@ -61,41 +64,39 @@ class InformationElements(object):
 
     def channel(self, rbytes):
         """
-        parses channel
-        channel IE tag number is 0x03
-        returns channel as int
-        last byte is channel
+            Parses channel
+            Channel IE tag number is 0x03
+            returns channel as int
+            last byte is channel
         """
         self.tagdata["channel"] = ord(rbytes[2])
 
     def ssid(self, rbytes):
         """
-        parses ssid IE tag
-        ssid IE tag number is 0x00
-        returns the ssid as a string
+            Parses ssid IE tag
+            ssid IE tag number is 0x00
+            Returns the ssid as a string
         """
         # how do we handle hidden ssids?
         self.tagdata["ssid"] = unicode(rbytes[2:], errors='replace')
 
     def rates(self, rbytes):
         """
-        parses rates from ie tag
-        rates IE tag number is 0x01
-        returns rates as in a list
+            Parses rates from ie tag
+            rates IE tag number is 0x01
+            returns rates as in a list
         """
-        rates = []
-        for rate in tuple(rbytes[2:]):
-            rates.append(ord(rate))
-        self.tagdata["rates"] = rates
+        self.tagdata["rates"] = [ (ord(rate)) for rate in tuple(rbytes[2:]) ]
+
 
     def rsn(self, rbytes):
         """
-        parses robust security network ie tag
-        rsn ie tag number is 0x30
-        returns rsn info in nested dict
-        gtkcs is group temportal cipher suite
-        akm is auth key managment, ie either wpa, psk ....
-        ptkcs is pairwise temportal cipher suite
+            Parses robust security network ie tag
+            rsn ie tag number is 0x30
+            returns rsn info in nested dict
+            gtkcs is group temportal cipher suite
+            akm is auth key managment, ie either wpa, psk ....
+            ptkcs is pairwise temportal cipher suite
         """
         rsn = {}
         ptkcs = []
@@ -169,14 +170,14 @@ class InformationElements(object):
 
 class Common(object):
     """
-    Class file for parsing
-    several common 802.11 frames
+        Class file for parsing
+        several common 802.11 frames
     """
     def __init__(self, dev):
         """
-        open up the libpcap interface
-        open up the device to sniff from
-        dev = device name as a string
+            Open up the libpcap interface
+            Open up the device to sniff from
+            dev = device name as a string
         """
         # this gets set to True if were seeing mangled packets
         self.mangled = False
@@ -184,59 +185,71 @@ class Common(object):
         self.mangledcount = 0
         # create ie tag parser
         self.IE = InformationElements()
-        self.parser = {0:{  # managment frames
-            0: self.placedef,   # assoication request
-            1: self.placedef,   # assoication response
-            2: self.placedef,   # reassoication request
-            3: self.placedef,   # reaassoication response
-            4: self.probeReq,   # probe request
-            5: self.probeResp,  # probe response
-            8: self.beacon,     # beacon
-            9: self.placedef,   # ATIM
-            10: self.placedef,  # disassoication
-            11: self.placedef,  # authentication
-            12: self.placedef,  # deauthentication
-            }, 1:{},  # control frames
+
+        # This associates each packet to the parser it corresponds to it
+        # Later we'll use that parsers to parse them
+        self.parser = {
+            0:{
+                # managment frames
+                0: self.placedef,   # association request
+                1: self.placedef,   # association response
+                2: self.placedef,   # reassociation request
+                3: self.placedef,   # reaassociation response
+                4: self.probe_request,   # probe request
+                5: self.probe_response,  # probe response
+                8: self.beacon,     # beacon
+                9: self.placedef,   # ATIM
+                10: self.placedef,  # disassoication
+                11: self.placedef,  # authentication
+                12: self.placedef,  # deauthentication
+                },
+            1:{},  # control frames
             2:{  # data frames
-             0: self.data,  # data
-             1: self.data,  # data + CF-ack
-             2: self.data,  # data + CF-poll
-             3: self.data,  # data + CF-ack+CF-poll
-             5: self.data,  # CF-ack
-             6: self.data,  # CF-poll
-             7: self.data,  # CF-ack+CF-poll
-             8: self.data,  # QoS Data
-             9: self.data,  # QoS Data + CF-ack
-             10: self.data,  # QoS Data + CF-poll
-             11: self.data,  # QoS Data + CF-ack+CF-poll
-             12: self.data,  # QoS Null
-             14: self.data,  # QoS + CF-poll (no data)
-             15: self.data,  # QoS + CF-ack (no data)
-             }}
+                0: self.data,  # data
+                1: self.data,  # data + CF-ack
+                2: self.data,  # data + CF-poll
+                3: self.data,  # data + CF-ack+CF-poll
+                5: self.data,  # CF-ack
+                6: self.data,  # CF-poll
+                7: self.data,  # CF-ack+CF-poll
+                8: self.data,  # QoS Data
+                9: self.data,  # QoS Data + CF-ack
+                10: self.data,  # QoS Data + CF-poll
+                11: self.data,  # QoS Data + CF-ack+CF-poll
+                12: self.data,  # QoS Null
+                14: self.data,  # QoS + CF-poll (no data)
+                15: self.data,  # QoS + CF-ack (no data)
+            }
+        }
 
         self.packetBcast = {
-        "oldbcast": '\x00\x00\x00\x00\x00\x00',  # old broadcast address
-        "l2": '\xff\xff\xff\xff\xff\xff',     # layer 2 mac broadcast
-        "ipv6m": '\x33\x33\x00\x00\x00\x16',  # ipv6 multicast
-        "stp": '\x01\x80\xc2\x00\x00\x00',    # Spanning Tree multicast 802.1D
-        "cdp": '\x01\x00\x0c\xcc\xcc\xcc',    # CDP/VTP mutlicast address
-        "cstp": '\x01\x00\x0C\xCC\xCC\xCD',   # Cisco shared STP Address
-        "stpp": '\x01\x80\xc2\x00\x00\x08',   # Spanning Tree multicast 802.1AD
-        "oam": '\x01\x80\xC2\x00\x00\x02',    # oam protocol 802.3ah
-        "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
-        "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
+            "oldbcast": '\x00\x00\x00\x00\x00\x00',  # old broadcast address
+            "l2": '\xff\xff\xff\xff\xff\xff',     # layer 2 mac broadcast
+            "ipv6m": '\x33\x33\x00\x00\x00\x16',  # ipv6 multicast
+            "stp": '\x01\x80\xc2\x00\x00\x00',    # Spanning Tree multicast 802.1D
+            "cdp": '\x01\x00\x0c\xcc\xcc\xcc',    # CDP/VTP mutlicast address
+            "cstp": '\x01\x00\x0C\xCC\xCC\xCD',   # Cisco shared STP Address
+            "stpp": '\x01\x80\xc2\x00\x00\x08',   # Spanning Tree multicast 802.1AD
+            "oam": '\x01\x80\xC2\x00\x00\x02',    # oam protocol 802.3ah
+            "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
+            "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
         }
         self.openSniff(dev)
 
     def openSniff(self, dev):
         """
-        open up a libpcap object
-        return object and radio tap boolen
+            open up a libpcap object
+            return object and radio tap boolen
         """
         packet = None
+
         self.lp = pcap.pcapObject()
-        # check what these numbers mean
-        self.lp.open_live(dev, 1600, 0 ,100)
+        # Open the capture device:
+        snap_lenght = 1600
+        promisc_flag = 0
+        timeout = 100
+        self.lp.open_live(dev, snap_lenght, promisc_flag, timeout)
+
         if self.lp.datalink() == 127:
             self.rth = True
             # snag a packet to look at header, this should always be a
@@ -355,7 +368,7 @@ class Common(object):
             return -1
         return {"src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
 
-    def probeResp(self, data):
+    def probe_response(self, data):
         """
         Parse out probe response
         return a dict of with keys of
@@ -369,7 +382,7 @@ class Common(object):
             # parse the IE tags
             # possible bug, no fixed 12 byte paramaters before ie tags?
             # these seem to have it...
-            self.IE.parseIE(data[36:])
+            self.IE.parse_ie(data[36:])
             if "ssid" not in self.IE.tagdata.keys():
                 self.mangled = True
                 self.mangledcount += 1
@@ -389,7 +402,7 @@ class Common(object):
         return {"bssid":bssid, "essid":essid, "src":src,
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
 
-    def probeReq(self, data):
+    def probe_request(self, data):
         """
         Parse out probe requests
         return a dict of with keys of
@@ -402,7 +415,7 @@ class Common(object):
             bssid = data[16:22]  # bssid addr 6 bytes
             # parse the IE tags
             # possible bug, no fixed 12 byte paramaters before ie tags?
-            self.IE.parseIE(data[24:])
+            self.IE.parse_ie(data[24:])
             if "ssid" not in self.IE.tagdata.keys():
                 self.mangled = True
                 self.mangledcount += 1
@@ -424,10 +437,10 @@ class Common(object):
 
     def beacon(self, data):
         """
-        Parse out beacon packets
-        return a dict with the keys of
-        src, dst, bssid, essid, channel ....
-        going to need to add more
+            Parse out beacon packets
+            return a dict with the keys of
+            src, dst, bssid, essid, channel ....
+            going to need to add more
         """
         try:
             dsbits = ord(data[1]) & 3
@@ -435,7 +448,7 @@ class Common(object):
             src = data[10:16]  # source addr 6 bytes
             bssid = data[16:22]  # bssid addr 6 bytes
             # parse the IE tags
-            self.IE.parseIE(data[36:])
+            self.IE.parse_ie(data[36:])
             if "ssid" not in self.IE.tagdata.keys():
                 self.mangled = True
                 self.mangledcount += 1
@@ -452,8 +465,16 @@ class Common(object):
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"bssid":bssid, "essid":essid, "src":src, "dst":dst,
-            "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
+
+        return {
+            "bssid":bssid,
+            "essid":essid,
+            "src":src,
+            "dst":dst,
+            "channel":channel,
+            "extended":self.IE.tagdata,
+            "ds":dsbits
+            }
 
 if __name__ == "__main__":
     x = Common(sys.argv[1])

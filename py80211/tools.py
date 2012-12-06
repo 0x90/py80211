@@ -88,7 +88,7 @@ class Interface(object):
         self.moniface["ctx"].open_injmon()
         self.moniface["name"] = self.moniface["ctx"].get_vap()
         #self.air = self.Airview(self.moniface)
-        #self.air.start()
+        #self.air.run()
 
     def getMonmode(self):
         """
@@ -104,10 +104,12 @@ class Interface(object):
 
 class ChannelHop(threading.Thread):
     """
-    Control a card and cause it to hop channels
-    Only one card per instance
+        Control a card and cause it to hop channels
+        Only one card per instance
     """
-    def __init__(self,interface):
+    def __init__(self, interface,
+        channels = [1,6,11,14,2,7,3,8,4,9,5,10,
+            36,40,44,48,52,56,60,64,149,153,157,161,165] ):
         """
         set the channel hopping sequence
         expects lorcon injmon() context
@@ -116,13 +118,12 @@ class ChannelHop(threading.Thread):
         threading.Thread.__init__(self)
         threading.Thread.daemon = True
         self.iface = interface
+        self.channellist = channels
         self.pause = False
         # dwell for 3 time slices on 1 6 11
         # default is 3/10 of a second
         # got the lists from kismet config file
         # thanks dragorn!
-        self.channellist = [1,6,11,14,2,7,3,8,4,9,5,10,
-            36,40,44,48,52,56,60,64,149,153,157,161,165]
         self.hopList = []
         self.current = 0
         self.checkChannels()
@@ -438,13 +439,20 @@ class Airview(threading.Thread):
         else:
             return None
 
-    def run(self):
+    @property
+    def channel(self):
+        return self.hopper.current
+
+    def run(self, channels=False):
         """
         start the parser
         """
         # need to start channel hopping here
-        self.hopper = ChannelHop(self.ctx)
-        self.hopper.start()
+        if channels:
+            self.hopper = ChannelHop(self.ctx, channels)
+        else:
+            self.hopper = ChannelHop(self.ctx)
+        self.hopper.run()
         self.parse()
 
     def kill(self):
