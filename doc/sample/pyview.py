@@ -2,7 +2,6 @@ import sys
 import time
 import os
 import optparse
-import pdb
 from py80211 import tools
 
 print "Py80211 Sample Application"
@@ -45,7 +44,6 @@ try:
         print "Channel %i" %(airmonitor.channel)
         # print out the access points and their essids
         print "Access point"
-        print lbss.keys()
         for bssid in lbss.keys():
             apbssid = ppmac(bssid)
             # we don't get as many mangled packets now, but every so often...
