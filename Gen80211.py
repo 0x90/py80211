@@ -182,9 +182,9 @@ class packetGenerator:
                 packets.append([
                     self.deauthBuildPacket(
                         self.packetTypes[btype],
-                        self.source_addr,
-                        self.destination_addr,
-                        self.bss_id_addr,
+                        source_addr,
+                        destination_addr,
+                        bss_id_addr,
                         self.randomDictObj(self.deauthPacketReason)
                         ),
                     channel])
