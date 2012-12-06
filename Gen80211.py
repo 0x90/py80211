@@ -147,7 +147,8 @@ class packetGenerator:
         channel = int(channel)
         if allow_bcast == False:
             # broadcast packets will not be sent
-            for btype in frameType:  # tx two packets with random reasons one two and one from
+            # tx two packets with random reasons one two and one from
+            for btype in frameType:
                 packets.append([
                     self.deauthBuildPacket(
                         self.packetTypes[btype],  # packet type
