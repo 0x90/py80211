@@ -2,6 +2,7 @@ import sys
 import time
 import os
 import optparse
+import pdb
 from py80211 import tools
 
 print "Py80211 Sample Application"
@@ -22,7 +23,7 @@ try:
     create an instance and create vap and monitor
     mode interface
     """
-    airmonitor = tools.Airview(options.card, channels=[4])
+    airmonitor = tools.Airview(options.card)
     airmonitor.start()
     ppmac = airmonitor.pformatMac
     while True:
@@ -44,6 +45,7 @@ try:
         print "Channel %i" %(airmonitor.channel)
         # print out the access points and their essids
         print "Access point"
+        print lbss.keys()
         for bssid in lbss.keys():
             apbssid = ppmac(bssid)
             # we don't get as many mangled packets now, but every so often...
@@ -64,7 +66,7 @@ try:
         # local clients
         lclient = airmonitor.clients
         # local clientsExtra
-        eclient = airmonitor.clients_extra
+        eclient = airmonitor.clientsExtra
         # for each client show its data
         for client in lclient.keys():
             pclient = ppmac(client)

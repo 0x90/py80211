@@ -108,7 +108,7 @@ class ChannelHop(threading.Thread):
     Control a card and cause it to hop channels
     Only one card per instance
     """
-    def __init__(self,interface):
+    def __init__(self, interface, channels=False):
         """
         set the channel hopping sequence
         expects lorcon injmon() context
@@ -122,8 +122,7 @@ class ChannelHop(threading.Thread):
         # default is 3/10 of a second
         # got the lists from kismet config file
         # thanks dragorn!
-        self.channellist = [1,6,11,14,2,7,3,8,4,9,5,10,
-            36,40,44,48,52,56,60,64,149,153,157,161,165]
+        self.channellist = channels
         self.hopList = []
         self.current = 0
         self.checkChannels()
@@ -207,13 +206,16 @@ class Airview(threading.Thread):
         # will need to refactor code to deal with more then one in the future
         # dong this for time right now
     """
-    def __init__(self, interface, mon=False):
+    def __init__(self, interface, mon=False,
+        channels = [1,6,11,14,2,7,3,8,4,9,5,10,
+            36,40,44,48,52,56,60,64,149,153,157,161,165]):
         """
         Open up a packet parser for a given interface and create monitor mode interface
         Thread the instance
         interface = interface as string
         if mon = True then interface = to the dicitionary object from the interface
         """
+        self.channels=channels
         self.stop = False
         self.hopper = ""
         threading.Thread.__init__(self)
@@ -391,7 +393,7 @@ class Airview(threading.Thread):
         start the parser
         """
         # need to start channel hopping here
-        self.hopper = ChannelHop(self.ctx)
+        self.hopper = ChannelHop(self.ctx, self.channels)
         self.hopper.start()
         self.parse()
 
