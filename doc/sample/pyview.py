@@ -22,7 +22,7 @@ try:
     create an instance and create vap and monitor
     mode interface
     """
-    airmonitor = tools.Airview(options.card)
+    airmonitor = tools.Airview(options.card, channels=[4])
     airmonitor.start()
     ppmac = airmonitor.pformatMac
     while True:
@@ -64,7 +64,7 @@ try:
         # local clients
         lclient = airmonitor.clients
         # local clientsExtra
-        eclient = airmonitor.clientsExtra
+        eclient = airmonitor.clients_extra
         # for each client show its data
         for client in lclient.keys():
             pclient = ppmac(client)

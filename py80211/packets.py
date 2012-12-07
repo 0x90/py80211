@@ -1,8 +1,7 @@
 from binascii import a2b_hex
 import random
-import pdb
 
-class Generator:
+class Generator(object):
     """
     A collection of code for building 802.11 packets
     This code allows building both valid 802.11 packets as
