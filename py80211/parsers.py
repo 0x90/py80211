@@ -235,8 +235,10 @@ class Common(object):
         """
         packet = None
         self.lp = pcap.pcapObject()
-        # check what these numbers mean
-        self.lp.open_live(dev, 1600, 0 ,100)
+        snap_lenght = 1600 # Size to get, this might truncate packages
+        promisc_flag = 0 # 0 to not put the interface in promisc mode
+        timeout = 100 # Timout in ms
+        self.lp.open_live(dev, snap_lenght, promisc_flag, timeout)
         if self.lp.datalink() == 127:
             self.rth = True
             # snag a packet to look at header, this should always be a
