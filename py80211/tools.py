@@ -72,7 +72,7 @@ class Interface(object):
         """
         os.write(self.tun, packet)
 
-    def openMon(self, interface):
+    def monitor(self, interface):
         """
         open a monitor mode interface and create a vap
         interface = string
@@ -81,17 +81,18 @@ class Interface(object):
         # open the card up and gain a a context to them
         # create a dict with interface name and context
         try:
-            self.moniface = {"ctx":PyLorcon2.Context(interface)}
+            self.moniface = {
+                "ctx" : PyLorcon2.Context(interface)
+                }
         except PyLorcon2.Lorcon2Exception, exception:
             print "%s is the %s interface there?" % (exception, interface)
             sys.exit(-1)
         # place cards in injection/monitor mode
         self.moniface["ctx"].open_injmon()
         self.moniface["name"] = self.moniface["ctx"].get_vap()
-        #self.air = self.Airview(self.moniface)
-        #self.air.start()
 
-    def getMonmode(self):
+    @property
+    def monitor_interface(self):
         """
         retruns mon interface object
         """
@@ -206,14 +207,14 @@ class Airview(threading.Thread):
         # will need to refactor code to deal with more then one in the future
         # dong this for time right now
     """
-    def __init__(self, interface, mon=False,
+    def __init__(self, interface_, mon=False,
         channels = [1,6,11,14,2,7,3,8,4,9,5,10,
             36,40,44,48,52,56,60,64,149,153,157,161,165]):
         """
-        Open up a packet parser for a given interface and create monitor mode interface
-        Thread the instance
-        interface = interface as string
-        if mon = True then interface = to the dicitionary object from the interface
+            Open up a packet parser for a given interface and create monitor mode interface
+            Thread the instance
+            interface = interface as string
+            if mon = True then interface = to the dicitionary object from the interface
         """
         self.channels=channels
         self.stop = False
@@ -221,12 +222,12 @@ class Airview(threading.Thread):
         threading.Thread.__init__(self)
         threading.Thread.daemon = True
         #create monitor mode interface
-        if mon is False:
-            self.intf = Interface()
-            self.intf.openMon(interface)
-            monif = self.intf.getMonmode()
+        if not mon:
+            self.interface = Interface()
+            self.interface.monitor(interface_)
+            monif = self.interface.monitor_interface
         else:
-            monif = interface
+            monif = interface_
         # get interface name for use with pylibpcap
         self.iface = monif["name"]
         # get context for dealing with channel hopper
@@ -300,8 +301,7 @@ class Airview(threading.Thread):
             #TODO: we may need to set semaphore here?
             self.hopper.lock = 1
             self.channel = self.hopper.current
-            frame = self.rd.parseFrame(
-                        self.rd.getFrame())
+            frame = self.rd.parseFrame( self.rd.getFrame() )
             self.hopper.lock = 0
             #release semaphore here -- we have what we came for
             # beacon frames
@@ -402,7 +402,7 @@ class Airview(threading.Thread):
         stop the parser
         """
         self.stop = True
-        self.intf.exit()
+        self.interface.exit()
 
 class ClientList(object):
     def __init__(self, iface):

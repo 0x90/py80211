@@ -2,46 +2,50 @@ import sys
 import time
 import os
 import optparse
-import pdb
 from py80211 import tools
 
 print "Py80211 Sample Application"
 parser = optparse.OptionParser("%prog options [-i]")
-parser.add_option("-i", "--interface", dest="card", nargs=1,
+parser.add_option( "-i", "--interface", dest="card", nargs=1,
     help="Interface to sniff and inject from")
+parser.add_option("-c", "--channel", dest="channels", default=False, nargs=120, action="append",
+    help="Channels to sniff from")
+parser.add_option("-b", "--bssid", dest="bssid", default=False,
+    help="Show only clients on this bssid")
 
 #check for correct number of arguments provided
 if len(sys.argv) < 3:
     parser.print_help()
-    print "Calling Example"
-    print "python pyview.py -i wlan0"
     sys.exit(0)
 else:
     (options, args) = parser.parse_args()
+
 try:
     """
-    create an instance and create vap and monitor
-    mode interface
+       create an instance and create vap and monitor
+        ode interface
     """
-    airmonitor = tools.Airview(options.card)
+    airmonitor = tools.Airview(options.card, options.channels)
+    if options.bssid:
+        channel = airmonitor.find_channel_by_bssid(options.bssid)
+        airmonitor = tools.Airview(options.card, channel)
     airmonitor.start()
     ppmac = airmonitor.pformatMac
+
     while True:
         """
-        run loop every 2 seconds to give us a chance to get new data
-        this is a long time but not terrible
+           run loop every 1 seconds to give us a chance to get new data
+            his is a long time but not terrible
         """
         time.sleep(1)
-        # clear the screen on every loop
         os.system("clear")
         """
-        grab a local copy from airview thread
-        This allows us to work with snapshots and not
-        have to deal with thread lock issues
+            grab a local copy from airview thread
+            This allows us to work with snapshots and not
+            have to deal with thread lock issues
         """
         lbss = airmonitor.bss
         # print the current sniffing channel to the screen
-        #this will always be 11 right now -- threading bad?
         print "Channel %i" %(airmonitor.channel)
         # print out the access points and their essids
         print "Access point"
@@ -58,17 +62,19 @@ try:
                 print ("%s %s" %(apbssid, essid)).encode("utf-8")
 
         """
-        Print out the clients and anything they are assoicated to
-        as well as probes to the screen
+           Print out the clients and anything they are assoicated to
+           as well as probes to the screen
         """
         print "\nClients"
         # get local copies from airview thread
         # local clients
         lclient = airmonitor.clients
         # local clientsExtra
-        eclient = airmonitor.clientsExtra
+        eclient = airmonitor.clients_extra
         # for each client show its data
         for client in lclient.keys():
+            if options.bssid and lclient[client] != options.bssid:
+                continue
             pclient = ppmac(client)
             # remove any wired devices we say via wired broadcasts
             if client in eclient.keys():

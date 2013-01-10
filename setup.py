@@ -10,5 +10,6 @@ setup(
     author='Textile & Crypt0s',
     license='GPL2',
     classifiers=[ 'Development Status :: 4 - Beta'],
-    packages = ['py80211']
+    packages = ['py80211'],
+    requires = [ 'pylorcon2', 'pylibpcap' ]
 )
