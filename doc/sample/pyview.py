@@ -94,7 +94,6 @@ try:
                     ap = aps[ap]
                     writer.writerow([ap['bssid'], ap['essid']])
 
-
 except KeyboardInterrupt:
     print "\nbye\n"
     airmonitor.kill()
