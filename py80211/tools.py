@@ -138,7 +138,7 @@ class ChannelHop(threading.Thread):
         # reverse so we start with 5ghz channels first
         for ch in self.channellist:
             try:
-                self.iface.set_channel(ch)
+                self.iface.set_channel(int(ch))
             except PyLorcon2.Lorcon2Exception:
                 continue
             self.hopList.append(ch)
@@ -166,7 +166,7 @@ class ChannelHop(threading.Thread):
             print "!!!!!!!!!!!!!!Waiting for lock...!!!!!!!!!!!!"
             time.sleep(2)
         if channel in self.hopList:
-            self.iface.set_channel(channel)
+            self.iface.set_channel(int(channel))
             return 0
         else:
             return -1
@@ -181,7 +181,7 @@ class ChannelHop(threading.Thread):
                 continue
             for ch in self.hopList:
                 try:
-                    self.iface.set_channel(ch)
+                    self.iface.set_channel(int(ch))
                 except PyLorcon2.Lorcon2Exception:
                     continue
                 self.current = ch

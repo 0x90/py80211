@@ -9,7 +9,7 @@ class Generator(object):
     """
     def __init__(self):
         """
-        intialize packet hex values
+            Intialize packet hex values
         """
         # packet headers are in little endian
         self.packetTypes = {
