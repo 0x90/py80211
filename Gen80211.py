@@ -54,6 +54,12 @@ class packetGenerator:
             "empty": self.bit2hex('0000000000000000'), # unset all bits
             }
 
+    def wdsPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel):
+        """
+        Generate a wds packet to the AP
+        """
+        return self.wdsBuildPacket(allow_bcast, destination_addr, source_addr, bss_id_addr, channel)
+    
     def reassPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ['reass']):
         """
         Generate a reassoication packet
