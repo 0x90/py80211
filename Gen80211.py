@@ -58,7 +58,7 @@ class packetGenerator:
         """
         Generate a reassoication packet
         """
-        return self.authPacketEngine(allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ['reass'])
+        return self.authPacketEngine(allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType)
     
     def authPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ["auth","assos"]):
         """
