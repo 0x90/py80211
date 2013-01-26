@@ -236,7 +236,11 @@ class Parse80211:
         return object and radio tap boolen
         """
         packet = None
-        self.lp = pcap.pcapObject()
+        try:
+            self.lp = pcap.pcapObject()
+        except AttributeError:
+            print "You have the wrong pypcap installed"
+            print "Use https://github.com/signed0/pylibpcap.git"
         # check what these numbers mean
         self.lp.open_live(dev, 1600, 0 ,100)
         if self.lp.datalink() == 127:
