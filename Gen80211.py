@@ -13,6 +13,8 @@ class packetGenerator:
         """
         intialize packet hex values
         """
+        # seed the random number generator with system time
+        random.seed()
         # packet headers are in little endian
         self.packetTypes = {
                 "deauth": [0,12],  # deauthentication packet header
@@ -20,7 +22,7 @@ class packetGenerator:
                 "auth":   [0,11],  # authentication packet header
                 "assos":  [0,0],   # association packet header
                 "data":   [2,0],   # data packet header
-                "reass":  [0,3]    # reassoication packet header
+                "reass":  [0,2]    # reassoication packet header
                 }
         # the oldbcast address may not always work
         # note this also contains some multi cast addresses
@@ -58,8 +60,29 @@ class packetGenerator:
         """
         Generate a wds packet to the AP
         """
-        return self.wdsBuildPacket(allow_bcast, destination_addr, source_addr, bss_id_addr, channel)
-    
+        packets = []
+        channel = int(channel)
+        if allow_bcast == True:
+            for bcast in self.packetBcast:
+                    packets.append([self.wdsBuildPacket(
+                        self.packetTypes['data'],  # packet type
+                        destination_addr,         # destinaion
+                        self.packetBcast[bcast],  # source
+                        bss_id_addr,              # bssid
+                        ),
+                        channel, source_addr])
+
+        if allow_bcast == False:
+            packets.append([
+                self.wdsBuildPacket(
+                    self.packetTypes['data'],  # packet type
+                    destination_addr,         # destinaion
+                    source_addr,              # source
+                    bss_id_addr,              # bssid
+                    ),
+                    channel, source_addr])
+        return packets
+
     def reassPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ['reass']):
         """
         Generate a reassoication packet
@@ -125,7 +148,7 @@ class packetGenerator:
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
-        packet.append('\x10\x00')    # seq number set to 1
+        packet.append('\x90\x00')    # seq number set to 9
         if ptype == 'assos':         # assoication packet type we need to change a few bits
             packet.append(self.randomDictObj(self.capabilities)) # capabilities field
             packet.append('\x01\x00')   # listen interval
@@ -226,11 +249,11 @@ class packetGenerator:
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
-        packet.append('\x70\x6a')    # seq number
+        packet.append('\x90\x00')    # seq number #set to 9
         packet.append(reasonCode)    # reason code
         return "".join(packet)
 
-    def wdsBuildPacket(self, btype ,dstAddr, srcAddr, bssid, reasonCode):
+    def wdsBuildPacket(self, btype ,dstAddr, srcAddr, bssid):
         """
         Contructs the WDS 4 address packet to be sent
         """
@@ -241,7 +264,7 @@ class packetGenerator:
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
-        packet.append('\x70\x6a')    # seq number
+        packet.append('\x90\x00')    # seq number , set to 9
         packet.append(srcAddr)       # wds src addr
         return "".join(packet)
 
@@ -254,9 +277,7 @@ class packetGenerator:
             dictObjectList = dictObject.values()
         else:
             dictObjectList = dictObject
-        return dictObjectList[
-            random.randrange(0,
-                len(dictObjectList), 1)]
+        return random.choice(dictObjectList)
 
     def randomMac(self):
         """
