@@ -4,6 +4,7 @@ import sys
 import os
 import fcntl
 import struct
+from select import select
 # custom imports
 import Parse80211
 import PyLorcon2
@@ -41,7 +42,8 @@ class iface80211:
         path = "/dev/net/tun"
         if self.checkTun(path) is not False:
             self.tun = os.open(path, os.O_RDWR)
-            ifr = struct.pack("16sH", "tun%d", self.IFF_TAP | self.IFF_NO_PI)
+            # ifr = struct.pack("16sH", "tun%d", self.IFF_TAP | self.IFF_NO_PI)
+            ifr = struct.pack("16sH", "tun%d", self.IFF_TAP)
             ifs = fcntl.ioctl(self.tun, self.TUNSETIFF, ifr)
             #fcntl.ioctl(self.tun, self.TUNSETOWNER, 1000)
             # return interface name
@@ -67,7 +69,9 @@ class iface80211:
         """
         read a packet from tun interface
         """
-        return os.read(self.tun, 1526)
+        packet = select([self.tun],[],[])[0]
+        if self.tun in packet:
+            return os.read(self.tun, 1526)
 
     def writeTun(self, packet):
         """
