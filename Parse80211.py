@@ -200,20 +200,20 @@ class Parse80211:
             12: self.placedef,  # deauthentication
             }, 1:{},  # control frames
             2:{  # data frames
-             0: self.data,  # data
-             1: self.data,  # data + CF-ack
-             2: self.data,  # data + CF-poll
-             3: self.data,  # data + CF-ack+CF-poll
-             5: self.data,  # CF-ack
-             6: self.data,  # CF-poll
-             7: self.data,  # CF-ack+CF-poll
-             8: self.data,  # QoS Data
-             9: self.data,  # QoS Data + CF-ack
-             10: self.data,  # QoS Data + CF-poll
-             11: self.data,  # QoS Data + CF-ack+CF-poll
-             12: self.data,  # QoS Null
-             14: self.data,  # QoS + CF-poll (no data)
-             15: self.data,  # QoS + CF-ack (no data)
+             0: self.fdata,  # data
+             1: self.fdata,  # data + CF-ack
+             2: self.fdata,  # data + CF-poll
+             3: self.fdata,  # data + CF-ack+CF-poll
+             5: self.fdata,  # CF-ack
+             6: self.fdata,  # CF-poll
+             7: self.fdata,  # CF-ack+CF-poll
+             8: self.fdata,  # QoS Data
+             9: self.fdata,  # QoS Data + CF-ack
+             10: self.fdata,  # QoS Data + CF-poll
+             11: self.fdata,  # QoS Data + CF-ack+CF-poll
+             12: self.fdata,  # QoS Null
+             14: self.fdata,  # QoS + CF-poll (no data)
+             15: self.fdata,  # QoS + CF-ack (no data)
              }}
 
         self.packetBcast = {
@@ -329,7 +329,7 @@ class Parse80211:
             # we dont have a parser for the packet
             return None
     
-    def data(self, data):
+    def fdata(self, data):
         """
         parse the src,dst,bssid from a data frame
         """
