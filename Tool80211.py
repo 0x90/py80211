@@ -5,6 +5,7 @@ import os
 import fcntl
 import struct
 from select import select
+import pcap
 # custom imports
 import Parse80211
 import PyLorcon2
@@ -53,6 +54,12 @@ class iface80211:
             # put interface up
             os.system("ifconfig %s up" %(ifname))
             # return interface name
+            try:
+                self.lp = pcap.pcapObject()
+                self.lp.open_live(ifname, 1526, 0 ,100)
+            except AttributeError:
+                print "You have the wrong pypcap installed"
+                print "Use https://github.com/signed0/pylibpcap.git"
             return ifname
         else:
             return False
@@ -72,6 +79,12 @@ class iface80211:
         packet = select([self.tun],[],[])[0]
         if self.tun in packet:
             return os.read(self.tun, 1526)
+    
+    def sniffTun(self):
+        """
+        read a packet from tun interface
+        """
+        return self.lp.next()
 
     def writeTun(self, packet):
         """
