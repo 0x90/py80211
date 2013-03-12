@@ -274,6 +274,8 @@ class Airview(threading.Thread):
         self.vSSID = {}
         # client to ap relationship
         self.capr = {}
+        # default channel
+        self.channel = 0
 
     @staticmethod
     def pformatMac(hexbytes):
