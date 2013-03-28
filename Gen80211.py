@@ -137,27 +137,6 @@ class packetGenerator:
                         channel, source_addr])
         return packets
 
-    def authBuildPacket(self, bptype, dstAddr, srcAddr, bssid, ptype):
-        """
-        Constructs the packets to be sent
-        ptype = expected packet type
-        """
-        # packetParts positions are as follows 
-        # 0:bptype 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = [self.genPtype(bptype)] # packet subtype & flags
-        packet.append('\x00\x00')        # duration
-        packet.append(dstAddr)       # destain_addr
-        packet.append(srcAddr)       # source_addr
-        packet.append(bssid)         # bss_id_addr
-        packet.append('\x90\x00')    # seq number set to 9
-        if ptype in ['assos', 'reass']:         # assoication packet type we need to change a few bits
-            packet.append(self.randomDictObj(self.capabilities)) # capabilities field
-            packet.append('\x01\x00')   # listen interval
-            packet.append('\x00\x00')   # set broadcast bssid
-        else:
-            packet.append('\x00\x00\x01\x00\x00\x00')  # set to open system auth
-        return "".join(packet)
-
     def deauthPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ['deauth','disass']):
         """
         Build each packet based on options
@@ -239,6 +218,28 @@ class packetGenerator:
                             ),channel])
         return packets
     
+    def authBuildPacket(self, bptype, dstAddr, srcAddr, bssid, ptype):
+        """
+        Constructs the packets to be sent
+        ptype = expected packet type
+        """
+        # packetParts positions are as follows 
+        # 0:bptype 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
+        packet = [self.genPtype(bptype)] # packet subtype & flags
+        packet.append('\x00\x00')        # duration
+        packet.append(dstAddr)       # destain_addr
+        packet.append(srcAddr)       # source_addr
+        packet.append(bssid)         # bss_id_addr
+        packet.append('\x90\x00')    # seq number set to 9
+        if ptype in ['assos', 'reass']:         # assoication packet type we need to change a few bits
+            # known bug here, where the ssid, and supported rates are needed
+            packet.append(self.randomDictObj(self.capabilities)) # capabilities field
+            packet.append('\x01\x00')   # listen interval
+            packet.append('\x00\x00')   # set broadcast bssid
+        else:
+            packet.append('\x00\x00\x01\x00\x00\x00')  # set to open system auth
+        return "".join(packet)
+
     def deauthBuildPacket(self, btype ,dstAddr, srcAddr, bssid, reasonCode):
         """
         Constructs the deauth/disassoicate packets to be sent
