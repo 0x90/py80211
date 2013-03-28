@@ -132,6 +132,7 @@ class packetGenerator:
                         destination_addr,         # destinaion
                         source_addr,              # source
                         bss_id_addr,              # bssid
+                        ptype                     # expected packet type
                         ),
                         channel, source_addr])
         return packets
@@ -149,7 +150,7 @@ class packetGenerator:
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
         packet.append('\x90\x00')    # seq number set to 9
-        if ptype == 'assos':         # assoication packet type we need to change a few bits
+        if ptype in ['assos', 'reass']:         # assoication packet type we need to change a few bits
             packet.append(self.randomDictObj(self.capabilities)) # capabilities field
             packet.append('\x01\x00')   # listen interval
             packet.append('\x00\x00')   # set broadcast bssid
