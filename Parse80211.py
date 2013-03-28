@@ -18,8 +18,86 @@ class IeTag80211:
             "\x01": self.rates,  # data rates tag parser
             "\x03": self.channel,  # channel tag parser
             "\x30": self.rsn,  # rsn tag parser
-            "\x32": self.exrates  # extended rates tag parser
+            "\x32": self.exrates,  # extended rates tag parser
+            "\xDD": self.vendor221, # 221 vendor tag parser
                       }
+    def vendor221(self, rbytes):
+        """
+        Parse the wpa IE tag 221 aka \xDD
+        returns wpa info in nested dict
+        gtkcs is group temportal cipher suite
+        akm is auth key managment, ie either wpa, psk ....
+        ptkcs is pairwise temportal cipher suite
+        """
+        wpa = {}
+        ptkcs = []
+        akm = []
+        # need to extend this
+        cipherS = {
+            1 : "WEP-40/64",
+            2 : "TKIP",
+            3 : "RESERVED",
+            4 : "CCMP",
+            5 : "WEP-104/128"
+            }
+        authKey = {
+            1 : "802.1x or PMK",
+            2 : "PSK",
+            }
+        try:
+            # remove IE tag, len and Microsoft OUI
+            packetLen = ord(rbytes[1])
+            vendor_OUI = rbytes[2:5]
+            vendor_OUI_type = ord(rbytes[5])
+            if vendor_OUI == "\x00\x50\xf2" and vendor_OUI_type == 1:
+                # WPA Element Parsing
+                version = struct.unpack('h', rbytes[6:8])[0]
+                wpa["gtkcsOUI"] = rbytes[8:11]
+                # GTK Bytes Parsing
+                gtkcsTypeI = ord(rbytes[11])
+                if gtkcsTypeI in cipherS.keys():
+                    gtkcsType = cipherS[gtkcsTypeI]
+                else:
+                    gtkcsType = gtkcsTypeI
+                wpa["gtkcsType"] = gtkcsType
+                # PTK Bytes Parsing
+                # len of ptk types supported
+                ptkcsTypeL = struct.unpack('h', rbytes[12:14])[0]
+                counter = ptkcsTypeL
+                cbyte = 14 #current byte
+                while counter != 0:
+                    ptkcsTypeOUI = rbytes[cbyte:cbyte+3]
+                    ptkcsTypeI = ord(rbytes[cbyte+3])
+                    if ptkcsTypeI in cipherS.keys():
+                        ptkcsType = cipherS[ptkcsTypeI]
+                    else:
+                        ptkcsType = ptkcsTypeI
+                    cbyte += 4 # end up on next byte to parse
+                    ptkcs.append({"ptkcsOUI":ptkcsTypeOUI,
+                                  "ptkcsType":ptkcsType})
+                    counter -= 1
+                akmTypeL = struct.unpack('h', rbytes[cbyte:cbyte+2])[0]
+                counter = akmTypeL
+                # skip past the akm len
+                cbyte = cbyte + 2
+                while counter != 0:
+                    akmTypeOUI = rbytes[cbyte:cbyte+3]
+                    akmTypeI = ord(rbytes[cbyte+3])
+                    if akmTypeI in authKey.keys():
+                        akmType = authKey[akmTypeI]
+                    else:
+                        akmType = akmTypeI
+                    cbyte += 4 # end up on next byte to parse
+                    akm.append({"akmOUI":akmTypeOUI,
+                                  "akmType":akmType})
+                    counter -= 1
+                pdb.set_trace()
+                wpa["ptkcs"] = ptkcs
+                wpa["akm"] = akm
+                self.tagdata["wpa"] = wpa
+        except IndexError:
+            # mangled packets
+            return -1
 
     def parseIE(self, rbytes):
         """
