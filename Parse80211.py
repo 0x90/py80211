@@ -49,52 +49,70 @@ class IeTag80211:
             packetLen = ord(rbytes[1])
             vendor_OUI = rbytes[2:5]
             vendor_OUI_type = ord(rbytes[5])
-            if vendor_OUI == "\x00\x50\xf2" and vendor_OUI_type == 1:
-                # WPA Element Parsing
-                version = struct.unpack('h', rbytes[6:8])[0]
-                wpa["gtkcsOUI"] = rbytes[8:11]
-                # GTK Bytes Parsing
-                gtkcsTypeI = ord(rbytes[11])
-                if gtkcsTypeI in cipherS.keys():
-                    gtkcsType = cipherS[gtkcsTypeI]
-                else:
-                    gtkcsType = gtkcsTypeI
-                wpa["gtkcsType"] = gtkcsType
-                # PTK Bytes Parsing
-                # len of ptk types supported
-                ptkcsTypeL = struct.unpack('h', rbytes[12:14])[0]
-                counter = ptkcsTypeL
-                cbyte = 14 #current byte
-                while counter != 0:
-                    ptkcsTypeOUI = rbytes[cbyte:cbyte+3]
-                    ptkcsTypeI = ord(rbytes[cbyte+3])
-                    if ptkcsTypeI in cipherS.keys():
-                        ptkcsType = cipherS[ptkcsTypeI]
+            if vendor_OUI == "\x00\x50\xf2":
+                if vendor_OUI_type == 1:
+                    # WPA Element Parsing
+                    version = struct.unpack('h', rbytes[6:8])[0]
+                    wpa["gtkcsOUI"] = rbytes[8:11]
+                    # GTK Bytes Parsing
+                    gtkcsTypeI = ord(rbytes[11])
+                    if gtkcsTypeI in cipherS.keys():
+                        gtkcsType = cipherS[gtkcsTypeI]
                     else:
-                        ptkcsType = ptkcsTypeI
-                    cbyte += 4 # end up on next byte to parse
-                    ptkcs.append({"ptkcsOUI":ptkcsTypeOUI,
-                                  "ptkcsType":ptkcsType})
-                    counter -= 1
-                akmTypeL = struct.unpack('h', rbytes[cbyte:cbyte+2])[0]
-                counter = akmTypeL
-                # skip past the akm len
-                cbyte = cbyte + 2
-                while counter != 0:
-                    akmTypeOUI = rbytes[cbyte:cbyte+3]
-                    akmTypeI = ord(rbytes[cbyte+3])
-                    if akmTypeI in authKey.keys():
-                        akmType = authKey[akmTypeI]
-                    else:
-                        akmType = akmTypeI
-                    cbyte += 4 # end up on next byte to parse
-                    akm.append({"akmOUI":akmTypeOUI,
-                                  "akmType":akmType})
-                    counter -= 1
-                pdb.set_trace()
-                wpa["ptkcs"] = ptkcs
-                wpa["akm"] = akm
-                self.tagdata["wpa"] = wpa
+                        gtkcsType = gtkcsTypeI
+                    wpa["gtkcsType"] = gtkcsType
+                    # PTK Bytes Parsing
+                    # len of ptk types supported
+                    ptkcsTypeL = struct.unpack('h', rbytes[12:14])[0]
+                    counter = ptkcsTypeL
+                    cbyte = 14 #current byte
+                    while counter != 0:
+                        ptkcsTypeOUI = rbytes[cbyte:cbyte+3]
+                        ptkcsTypeI = ord(rbytes[cbyte+3])
+                        if ptkcsTypeI in cipherS.keys():
+                            ptkcsType = cipherS[ptkcsTypeI]
+                        else:
+                            ptkcsType = ptkcsTypeI
+                        cbyte += 4 # end up on next byte to parse
+                        ptkcs.append({"ptkcsOUI":ptkcsTypeOUI,
+                                      "ptkcsType":ptkcsType})
+                        counter -= 1
+                    akmTypeL = struct.unpack('h', rbytes[cbyte:cbyte+2])[0]
+                    counter = akmTypeL
+                    # skip past the akm len
+                    cbyte = cbyte + 2
+                    while counter != 0:
+                        akmTypeOUI = rbytes[cbyte:cbyte+3]
+                        akmTypeI = ord(rbytes[cbyte+3])
+                        if akmTypeI in authKey.keys():
+                            akmType = authKey[akmTypeI]
+                        else:
+                            akmType = akmTypeI
+                        cbyte += 4 # end up on next byte to parse
+                        akm.append({"akmOUI":akmTypeOUI,
+                                      "akmType":akmType})
+                        counter -= 1
+                    wpa["ptkcs"] = ptkcs
+                    wpa["akm"] = akm
+                    self.tagdata["wpa"] = wpa
+                if vendor_OUI_type == 4:
+                    wpsState = "Unknown"
+                    # WPA Element Parsing
+                    # Verson data element type
+                    det = struct.unpack('h', rbytes[6:8])[0]
+                    # data element length
+                    delen = struct.unpack('h', rbytes[8:10])[0]
+                    # wps version
+                    version = ord(rbytes[10])
+                    # WPS data element type
+                    wdet = struct.unpack('h', rbytes[11:13])[0]
+                    # WPS data element length
+                    wdelen = struct.unpack('h', rbytes[13:15])[0]
+                    # wps state
+                    if ord(rbytes[15]) is 2:
+                        # wps is configured
+                        wpsState = "configured"
+                    self.tagdata["wps"] = {"state": wpsState}
         except IndexError:
             # mangled packets
             return -1
