@@ -402,7 +402,10 @@ class Parse80211:
         # wipe out all bits we dont need
         ftype = (ptype >> 2) & 3
         stype = ptype >> 4
-
+        # protected data bit aka the WEP bit
+        flags = ord(data[self.rt + 1])
+        if (flags & 64):
+            wepbit = True
         if ftype in self.parser.keys():
             if stype in self.parser[ftype].keys():
                 # will return -1 if packet is mangled
