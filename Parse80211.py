@@ -381,6 +381,7 @@ class Parse80211:
         Determine the type of frame and
         choose the right parser
         """
+        wepbit = False
         if frame is not None:
             data = frame[1]
             if data is None:
@@ -417,6 +418,7 @@ class Parse80211:
                 else:
                     parsedFrame["type"] = ftype
                     parsedFrame["stype"] = stype
+                    parsedFrame["wepbit"] = wepbit
                     # strip the headers
                     parsedFrame['rtap'] = self.rt
                     parsedFrame["raw"] = data
