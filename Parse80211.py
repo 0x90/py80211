@@ -225,7 +225,7 @@ class IeTag80211:
             ptkcsTypeL = struct.unpack('h', rbytes[8:10])[0]
             counter = ptkcsTypeL
             cbyte = 10 #current byte
-            while counter >= ptkcsTypeL:
+            while counter != 0:
                 ptkcsTypeOUI = rbytes[cbyte:cbyte+3]
                 ptkcsTypeI = ord(rbytes[cbyte+3])
                 if ptkcsTypeI in cipherS.keys():
@@ -241,7 +241,7 @@ class IeTag80211:
             cbyte += 2
             counter = akmTypeL
             #this might break need testing
-            while counter >= akmTypeL:
+            while counter != 0:
                 akmTypeOUI = rbytes[cbyte:cbyte+3]
                 akmTypeI = ord(rbytes[cbyte+3])
                 if akmTypeI in authKey.keys():
