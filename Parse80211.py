@@ -324,9 +324,9 @@ class Parse80211:
         "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
         "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
         }
-        self.openSniff(dev)
+        self.openLiveSniff(dev)
 
-    def openSniff(self, dev):
+    def openLiveSniff(self, dev):
         """
         open up a libpcap object
         return object and radio tap boolen
