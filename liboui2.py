@@ -179,7 +179,7 @@ class Oui:
                         split_line = line.split()
                         #print split_line[0]
                         #Create a hash that will allow two-way search
-                        ouihex = split_line[0]
+                        ouihex = split_line[0].replace("-", ":")
                         throwaway = split_line[1]
                         company = ' '.join(split_line[2:]).lower().strip().lstrip()
 
