@@ -99,7 +99,27 @@ class Oui:
         filename = filename of oui.txt to parse
         parser = parser to use, current options are ieee
         """
-        self.filename = filename
+        OUI_FILE = None
+        # support loading oui.txt from multiple locations 
+        # where it might be pre installed
+        self.OUI_PATH = ["/etc/aircrack-ng/airodump-ng-oui.txt",
+            "/usr/local/etc/aircrack-ng/airodump-ng-oui.txt",
+            "/usr/share/aircrack-ng/airodump-ng-oui.txt",
+            "/var/lib/misc/oui.txt",
+            "/etc/manuf/oui.txt",
+            "/usr/share/wireshark/wireshark/manuf/oui.txt",
+            "/usr/share/wireshark/manuf/oui.txt"]
+        # append any oui paths provided by program using lib to list
+        if filename != None:
+            self.OUI_PATH.append(filename)
+        for PATH in self.OUI_PATH:
+            if os.path.isfile(PATH):
+                OUI_FILE = PATH
+        if OUI_FILE == None:
+            # default option
+            aircrackOUI=self.OUI_PATH[1]
+        
+        self.filename = OUI_FILE
         # may cause an issue with parsed files in other directories
         self.pyobj = "%s.pyobj" %(self.filename)
         self.the_hash = {}
