@@ -200,7 +200,7 @@ class Oui:
         #pretty statistics now that we're done
         total = 0
         for mac in hash.values():
-            total = total + len(mac)
+            total += len(mac)
 
         print str(len(hash.keys())) + " Total Companies with %s OUI's" %(total)
         print "Parsing complete.  Saving dictionary object to file" 
@@ -223,14 +223,29 @@ class Oui:
         self.values = self.the_hash.values()
         return True
 
-    def search(self, value, searchtype):
+    def search(self, value, searchtype, greed = False):
         if self.buildindex() is None:
             print "failed to create index."
             return None
         #for looking up mac addresses by company
         if searchtype == 'c':
-            #bugfix
-            return self.the_hash[value]
+            if greed == True:
+                #this will return a list of lists
+                keys = self.the_hash.keys()
+                list_hopper = []
+                answer = []
+                company_search = re.compile(value+'.*')
+                for key in keys:
+                    match = company_search.search(key)
+                    if match is not None:
+                        list_hopper.append(key)
+                #Add all matches from the companies to a main list, then send the list to the requestor
+                for key in list_hopper:
+                    answer.extend(self.the_hash[key])
+                return answer
+            else:
+                #bugfix
+                return self.the_hash[value]
 
         #For looking up a company by mac address
         if searchtype == 'm':
