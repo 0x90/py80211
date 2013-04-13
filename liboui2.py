@@ -179,7 +179,9 @@ class Oui:
                         split_line = line.split()
                         #print split_line[0]
                         #Create a hash that will allow two-way search
-                        ouihex = split_line[0]
+                        #remove - replace with 
+                        ouihex_dashes = split_line[0]
+                        ouihex = re.sub("-",":",ouihex_dashes)
                         throwaway = split_line[1]
                         company = ' '.join(split_line[2:]).lower().strip().lstrip()
 
@@ -227,7 +229,8 @@ class Oui:
             return None
         #for looking up mac addresses by company
         if searchtype == 'c':
-            return [self.the_hash[value]]
+            #bugfix
+            return self.the_hash[value]
 
         #For looking up a company by mac address
         if searchtype == 'm':
