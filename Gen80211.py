@@ -145,7 +145,7 @@ class packetGenerator:
         allow_bcast is a boolen var on if bcast addresses are allowed to be used
         destination_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
         source_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
-        bss_id_addr is expecing the bssid mac addy in format of "xx:xx:xx:xx:xx:xx"
+        bss_id_addr is expecting the bssid mac addy in format of "xx:xx:xx:xx:xx:xx"
         channel is expected as int, no check is done if its a valid 802.11 channel
         a list of frames types to send, these can be overloaded
         """
