@@ -225,6 +225,10 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:bptype 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
+        if dstAddr == bssid:
+            dsDir = True
+        else:
+            dsDir = False
         packet = [self.genPtype(bptype)] # packet subtype & flags
         packet.append('\x00\x00')        # duration
         packet.append(dstAddr)       # destain_addr
@@ -246,7 +250,12 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = [self.genPtype(btype)]  # subtype & flags
+        # determine ds bit
+        if dstAddr == bssid:
+            dsDir = True
+        else:
+            dsDir = False
+        packet = [self.genPtype(btype, dsDir)]  # subtype & flags
         packet.append('\x00\x00')        # duration
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
@@ -261,6 +270,10 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
+        if dstAddr == bssid:
+            dsDir = True
+        else:
+            dsDir = False
         packet = [self.genPtype(btype)] # subtype & flags
         packet.append('\x00\x00')    # duration
         packet.append(dstAddr)       # destain_addr
