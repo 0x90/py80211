@@ -225,10 +225,6 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:bptype 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        if dstAddr == bssid:
-            dsDir = True
-        else:
-            dsDir = False
         packet = [self.genPtype(bptype)] # packet subtype & flags
         packet.append('\x00\x00')        # duration
         packet.append(dstAddr)       # destain_addr
@@ -250,12 +246,7 @@ class packetGenerator:
         """
         # packetParts positions are as follows 
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        # determine ds bit
-        if dstAddr == bssid:
-            dsDir = True
-        else:
-            dsDir = False
-        packet = [self.genPtype(btype, dsDir)]  # subtype & flags
+        packet = [self.genPtype(btype)]  # subtype & flags
         packet.append('\x00\x00')        # duration
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
@@ -336,7 +327,7 @@ class packetGenerator:
         sbit = int(bits[8:16], 2)
         return chr(fbit) + chr(sbit)
     
-    def genPtype(self, ptype, fromds = False):
+    def genPtype(self, ptype, fromds = "adhoc"):
         """
         generate a framecontrol in little endian
         ptype is list [type,subtype] as int
@@ -348,10 +339,16 @@ class packetGenerator:
         pbyte = 0 | int(ptype[0]) << 2
         # set the subtype
         pbyte = pbyte | int(ptype[1]) << 4
-        if fromds is True:
+        if fromds == "client":
+            # from client to ap
             flags = '\x02'
-        else:
+        elif fromds == "ap":
+            # from ap to client
             flags = '\x01'
+        elif fromds == "adhoc":
+            # managment frame or adhoc
+            flags = '\x00'
+
         return chr(pbyte) + flags
 
 
