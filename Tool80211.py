@@ -256,10 +256,13 @@ class Airview(threading.Thread):
         #### New code ####
         # dict object to store client objects in 
         # format is {mac_address:object}
-        self.clientObjectss = {}
+        self.clientObjects = {}
         # dict object to store ap objects in
         # format is {bssid:object}
         self.apObjects = {}
+        #dict object to store ess objects
+        # format is {essid:object}
+        self.essObjects = {}
 
 
     @staticmethod
@@ -366,7 +369,8 @@ class Airview(threading.Thread):
                 ap_object.updateEssid(essid)
                 # update ap_last time seen
                 ap_object.lts = time.time()
-                # update the ess 
+                # update the ess
+                #NOTE this is broken, need to populate ess from ap's
                 if ap_object.essid in self.essObjects.keys():
                     if bssid not in self.essObjects[essid].points:
                         self.essObjects[essid].points.append(bssid)
