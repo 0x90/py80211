@@ -3,6 +3,7 @@ import time
 import os
 import optparse
 # update the system path to look for Tool80211 one directory up
+import pdb
 try:
     import Tool80211
 except ImportError:
@@ -51,22 +52,15 @@ if __name__ == "__main__":
             This allows us to work with snapshots and not
             have to deal with thread lock issues
             """
-            lbss = airmonitor.bss
+            bss = airmonitor.apObjects 
             # print the current sniffing channel to the screen
-            #this will always be 11 right now -- threading bad?
             print "Channel %i" %(airmonitor.channel)
             # print out the access points and their essids
             print "Access point"
-            for bssid in lbss.keys():
+            for bssid in bss.keys():
                 apbssid = ppmac(bssid)
-                # we don't get as many mangled packets now, but every so often...
-                # we don't do mangle detection yet, so for now we deal.
-                essid = lbss[bssid]
-                if airmonitor.verifySSID(bssid, essid) is False:
-                    # bad essids, skip printing
-                    continue
-                else:
-                    print ("%s %s" %(apbssid, essid)).encode("utf-8")
+                essid = bss[bssid].essid
+                print ("%s %s" %(apbssid, essid)).encode("utf-8")
 
             """
             Print out the clients and anything they are assoicated to
@@ -75,27 +69,24 @@ if __name__ == "__main__":
             print "\nClients"
             # get local copies from airview thread
             # local clients
-            lclient = airmonitor.clients
-            # local clientsExtra
-            eclient = airmonitor.clientsExtra
+            clients = airmonitor.clientObjects
             # for each client show its data
-            for client in lclient.keys():
-                pclient = ppmac(client)
-                # remove any wired devices we say via wired broadcasts
-                if client in eclient.keys():
-                    if eclient[client]['wired'] == True:
-                        continue
-                plclient = lclient[client]
-                if plclient != "Not Associated":
-                    plclient = ppmac(plclient)
-                probes = airmonitor.getProbes(client)
+            for mac in clients.keys():
+                # pretty up the mac
+                prettymac = ppmac(mac)
+                # remove any wired devices we see via wired broadcasts
+                if clients[mac].wired is True:
+                    continue
+                if clients[mac].assoicated is True:
+                    assoicatedState = ppmac(clients[mac].bssid)
+                else:
+                    assoicatedState = clients[mac].bssid
+                probes = clients[mac].probes
                 # print out a probe list, otherwise just print the client and its assoication
                 if probes != None:
-                    pass
-                    print pclient, plclient, ','.join(probes)
+                    print prettymac, assoicatedState, ','.join(probes)
                 else:
-                    pass
-                    print pclient, plclient
+                    print prettymac, assoicatedState
     except KeyboardInterrupt:
         print "\nbye\n"
         airmonitor.kill()
