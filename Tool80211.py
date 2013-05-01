@@ -333,8 +333,11 @@ class Airview(threading.Thread):
             self.apObjects[bssid] = accessPoint(bssid)
         # update list of clients connected to an AP
         ###NOTE right now a client can show up connected to more the one AP
-        ap_object = self.apObjects[bssid]
-        ap_object.connectedclients.append(clientmac)
+        # create ap objects based on bssids seen from clients
+        # make sure we dont do broadcast addresses
+        if self.rd.isBcast(bssid) is False:
+            ap_object = self.apObjects[bssid]
+            ap_object.connectedclients.append(clientmac)
 
     def parse(self):
         """
