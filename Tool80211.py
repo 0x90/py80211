@@ -329,7 +329,7 @@ class Airview(threading.Thread):
         # update list of clients connected to an AP
         ###NOTE right now a client can show up connected to more the one AP
         ap_object = self.apObjects[bssid]
-        ap_oject.connectedclients.append(clientmac)
+        ap_object.connectedclients.append(clientmac)
 
     def parse(self):
         """
