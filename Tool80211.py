@@ -284,31 +284,34 @@ class Airview(threading.Thread):
         src = frame["src"]
         dst = frame["dst"]
         ds = frame["ds"]
-        assoicated = None
+        assoicated = False
         wired = None
         # actual client mac
         clientmac = None
-
+        # NOTE need to figure how to mark a client
+        # no longer assoicated
         if ds == 0:
             # broadcast/adhoc
-            assoicated = "Not Associated"
+            assoicated = True
             wired = False
             clientmac = src
 
         elif ds == 1:
             # station to ap
-            assoicated = bssid
+            assoicated = True
             wired = False
             clientmac = src
         
         elif ds == 2:
             # ap to station
             clientmac = dst
-            assoicated = bssid
+            assoicated = True
             # check for wired broadcasts
             if self.rd.isBcast(dst) is True:
-                #were working with a wired broadcast
+                # were working with a wired broadcast
                 wired = True
+                # reset client mac to correct src addr
+                clientmac = src
             else:
                 wired = False
         elif ds == 3:
@@ -319,9 +322,11 @@ class Airview(threading.Thread):
             self.clientObjects[clientmac] = client(clientmac)
         client_obj = self.clientObjects[clientmac]
         client_obj.wired = wired
-        client.assoicated = assoicated
+        client_obj.assoicated = assoicated
+        if assoicated is True:
+            client_obj.bssid = bssid
         #update last time seen
-        client.lts = time.time()
+        client_obj.lts = time.time()
         #update access points with connected clients
         if bssid not in self.apObjects.keys():
             # create new object
@@ -390,6 +395,7 @@ class Airview(threading.Thread):
                     self.clientObjects[clientmac] = client(src)
                 client_obj = self.clientObjects[src]
                 client_obj.probes.append(essid)
+                client_obj.lts = time.time()
 
     def run(self):
         """
