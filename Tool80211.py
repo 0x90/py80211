@@ -318,6 +318,7 @@ class Airview(threading.Thread):
             # wds, were ignoring this for now
             return
         client_obj = None
+        # create client mac if it doesnt exist
         if clientmac not in self.clientObjects.keys(): 
             self.clientObjects[clientmac] = client(clientmac)
         client_obj = self.clientObjects[clientmac]
