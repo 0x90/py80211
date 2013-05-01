@@ -77,7 +77,7 @@ class client:
         self.bssid = "Not Assoicated" # Bssid of assoicated ap
         self.wired = False            # not a wired client by default
     
-    def updateProbes(probe):
+    def updateProbes(self, probe):
         """
         update probes list and keep it unique
         """
