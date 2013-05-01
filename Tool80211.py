@@ -389,6 +389,7 @@ class Airview(threading.Thread):
                 self.processData(frame)
             
             if frame["type"] == 0 and frame["stype"] in [4]:
+                # probes parsing
                 # update client list
                 self.processData(frame)
                 # process probe for essid
