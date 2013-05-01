@@ -331,11 +331,14 @@ class Airview(threading.Thread):
         if bssid not in self.apObjects.keys():
             # create new object
             self.apObjects[bssid] = accessPoint(bssid)
-        # update list of clients connected to an AP
         ###NOTE right now a client can show up connected to more the one AP
         # create ap objects based on bssids seen from clients
         # make sure we dont do broadcast addresses
         if self.rd.isBcast(bssid) is False:
+            if bssid not in self.apObjects.keys():
+                # create new object
+                self.apObjects[bssid] = accessPoint(bssid)
+            # update list of clients connected to an AP
             ap_object = self.apObjects[bssid]
             ap_object.connectedclients.append(clientmac)
 
