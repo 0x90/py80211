@@ -303,7 +303,7 @@ class Airview(threading.Thread):
         
         elif ds == 2:
             # ap to station
-            clientmac = src
+            clientmac = dst
             assoicated = bssid
             # check for wired broadcasts
             if self.rd.isBcast(dst) is True:
