@@ -397,7 +397,7 @@ class Airview(threading.Thread):
                 if src not in self.clientObjects.keys(): 
                     self.clientObjects[clientmac] = client(src)
                 client_obj = self.clientObjects[src]
-                client_obj.probes.append(essid)
+                client_obj.updateProbes(essid)
                 client_obj.lts = time.time()
 
     def run(self):
