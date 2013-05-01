@@ -76,7 +76,16 @@ class client:
         self.assoicated = False       # list if client is associated to an ap
         self.bssid = "Not Assoicated" # Bssid of assoicated ap
         self.wired = False            # not a wired client by default
-
+    
+    def updateProbes(probe):
+        """
+        update probes list and keep it unique
+        """
+        try:
+            self.probes.index(probe)
+        except ValueError:
+            self.probes.append(probe)
+            
     def numProbes(self):
         """
         return number of probe requests
