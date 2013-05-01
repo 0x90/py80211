@@ -9,6 +9,7 @@ import pcap
 # custom imports
 import Parse80211
 import PyLorcon2
+from wifiobjects import *
 
 #debug imports
 import pdb
@@ -251,6 +252,19 @@ class Airview(threading.Thread):
         self.ctx = monif["ctx"]
         # open up a parser
         self.rd = Parse80211.Parse80211(self.iface)
+        
+        #### New code ####
+        # dict object to store client objects in 
+        # format is {mac_address:object}
+        self.clientObjects = {}
+        # dict object to store ap objects in
+        # format is {bssid:object}
+        self.apObjects = {}
+        # allow us to verify ssids
+        #key = bssid value=[ssid,ssid....]
+        self.vSSID = {}
+
+        #### SET TO BE REMOVED ###
         # key = bssid, value = essid
         self.bss = {}
         # load up latest beacon packet for an AP
@@ -375,8 +389,11 @@ class Airview(threading.Thread):
             self.channel = self.hopper.current
             frame = self.rd.parseFrame(
                         self.rd.getFrame())
+            
+            # not sure if this is needed any more
             self.hopper.lock = 0
             #release semaphore here -- we have what we came for
+            
             # beacon frames
             if frame == None:
                 # we cant parse the frame
@@ -384,36 +401,30 @@ class Airview(threading.Thread):
             if frame == -1:
                 # frame is mangled
                 continue
+            
             if frame["type"] == 0 and frame["stype"] == 8:
                 # beacon packet
+                ap_obj = None
                 bssid = frame["bssid"]
                 essid = frame["essid"]
-                # update bss list, we dont check for keys
-                # as it allows the essid for a given bssid to be updated
-                self.bss[bssid] = essid
-                # update ess list
-                if essid in self.ess.keys():
-                    self.ess[essid].append(bssid)
+                # grab the AP object or create it if it doesnt exist
+                if bssid in self.apObjects.keys()
+                    ap_obj = self.apObjects[bssid]
                 else:
-                    self.ess[essid]=[bssid]
-                #update all info about ap
-                self.apData[bssid] = frame
-                if bssid in self.vSSID.keys():
-                    ssidList = self.vSSID[bssid]
-                    if len(ssidList) > 3:
-                        # remove first item
-                        ssidList.pop(0)
-                        # append new one to back
-                        ssidList.append(essid)
-                        self.vSSID[bssid] = ssidList
-                    else:
-                        self.vSSID[bssid].append(essid)
-                else:
-                    self.vSSID[bssid] = [essid]
-                continue
+                    self.apObjects[bssid] = accessPoint(bssid)
+                    ap_obj = self.apObjects[bssid]
+                # update essid
+                ap_object.updateEssid(essid)
+                # update the ess 
+                if ap_obj.essid in self.essObjects.keys()
+                    if bssid not in self.essObjects[essid].points:
+                        self.essObjects[essid].points.append(bssid)
+                #need to update other ap features
+            
             elif frame["type"] == 2 and frame["stype"] in range(0,16):
                 #applying to all data packets
                 self.updateClient(frame)
+            
             if frame["type"] == 0 and frame["stype"] in [4]:
                 # update client list
                 self.updateClient(frame)
