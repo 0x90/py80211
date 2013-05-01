@@ -291,8 +291,11 @@ class Airview(threading.Thread):
         # NOTE need to figure how to mark a client
         # no longer assoicated
         if ds == 0:
-            # broadcast/adhoc
+            # broadcast/adhoc/managmentFrames
             assoicated = True
+            if frame["type"] == 0 and frame["stype"] == 4:
+                # probe packet
+                assoicated = False
             wired = False
             clientmac = src
 
@@ -329,9 +332,6 @@ class Airview(threading.Thread):
         #update last time seen
         client_obj.lts = time.time()
         #update access points with connected clients
-        if bssid not in self.apObjects.keys():
-            # create new object
-            self.apObjects[bssid] = accessPoint(bssid)
         ###NOTE right now a client can show up connected to more the one AP
         # create ap objects based on bssids seen from clients
         # make sure we dont do broadcast addresses
