@@ -35,7 +35,7 @@ class packetGenerator:
                 "cstp": '\x01\x00\x0C\xCC\xCC\xCD',   # Cisco shared STP Address
                 "stpp": '\x01\x80\xc2\x00\x00\x08',   # Spanning Tree multicast 802.1AD
                 "oam": '\x01\x80\xC2\x00\x00\x02',    # oam protocol 802.3ah
-                "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
+                "ipv4m": '\x01\x00\x5e\x7F\x00\xCD',  # ipv4 multicast
                 "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
                 } 
         self.deauthPacketReason = [
