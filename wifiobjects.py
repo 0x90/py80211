@@ -35,7 +35,7 @@ class accessPoint:
         """
         return len(self.connectedclients)
     
-    def updateEssid(self, essid, iternum = 3)
+    def updateEssid(self, essid, iternum=3):
         """
         help prevent mangled ssids from being set
         require us to see it at least 3 times before we update
@@ -51,7 +51,7 @@ class accessPoint:
             if essid != ssid:
                 # something didnt match stop checking
                 break
-            if essid == ssid and counter = iternum:
+            if essid == ssid and counter == iternum:
                 # all 3 matched, update
                 self.essid = essid
             counter += 1
@@ -63,14 +63,17 @@ class client:
     """
     Client object
     """
-    def __init__(self):
-        self.fts = time.time()     # first time object is seen
-        self.lts = None            # last time object is seen, update on every access 
-        self.name = "client"       # object type
-        self.mac = None            # client mac address
-        self.probes = []           # list of probe requests client broadcast
-        self.assoicated = False    # list of client is associated to an ap
-        self.bssid = None          # Bssid of assoicated ap
+    def __init__(self, mac):
+        """
+        mac = client mac address in hex
+        """
+        self.fts = time.time()       # first time object is seen
+        self.lts = None              # last time object is seen, update on every access 
+        self.name = "client"         # object type
+        self.mac = mac               # client mac address
+        self.probes = []             # list of probe requests client broadcast
+        self.assoicated = False      # list if client is associated to an ap
+        self.bssid = "Not Assoicate" # Bssid of assoicated ap
 
     def numProbes(self):
         """
