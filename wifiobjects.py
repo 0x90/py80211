@@ -56,8 +56,9 @@ class accessPoint:
                 self.essid = essid
             counter += 1
         # remove first record and append new one to back
-        self.ssidList.pop(0)
-        self.ssidList.append(ssid)
+        if len(self.ssidList) != 0:
+            self.ssidList.pop(0)
+        self.ssidList.append(essid)
             
 class client:
     """
