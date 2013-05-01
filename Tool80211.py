@@ -260,36 +260,7 @@ class Airview(threading.Thread):
         # dict object to store ap objects in
         # format is {bssid:object}
         self.apObjects = {}
-        # allow us to verify ssids
-        #key = bssid value=[ssid,ssid....]
-        self.vSSID = {}
 
-        #### SET TO BE REMOVED ###
-        # key = bssid, value = essid
-        self.bss = {}
-        # load up latest beacon packet for an AP
-        self.apData = {}
-        # note fake AP's can end up in here.. need to solve this
-        # key = essid, value [bssid, bssid]
-        self.ess = {}
-        # this may not work for WDS, though ignoring wds for now
-        # key = mac, value=assoication
-        self.clients = {}
-        # probes from a given client
-        self.clientProbes = {}
-        # info on clients
-        self.clientsExtra = {}
-        #the above works fine, but let's get more efficient
-        self.view = {}
-        # ap = key{essid},value{bssid,clients}
-        # clients = key{mac},value{probelist[]}
-        # dict to store last 5 essids seen for a bssid
-        #key = bssid value=[ssid,ssid....]
-        self.vSSID = {}
-        # client to ap relationship
-        self.capr = {}
-        # default channel
-        self.channel = 0
 
     @staticmethod
     def pformatMac(hexbytes):
@@ -302,23 +273,7 @@ class Airview(threading.Thread):
             mac.append(byte.encode('hex'))
         return ':'.join(mac)
 
-    def verifySSID(self, bssid, uessid):
-        """
-        its possible to get a mangled ssid
-        this allows us to check last 5 seen 
-        to see if they are mangled or its been changed
-        bssid = bssid in hex of ap in question
-        uessid = essid in hex to verify
-        if all 5 dont match return False, else return True
-        """
-        for essid in self.vSSID[bssid]:
-            if uessid != essid:
-                # blank it out
-                self.vSSID[bssid] = []
-                return False
-        return True
-
-    def updateClient(self, frame):
+    def processData(self, frame):
         """
         Update self.clients var based on ds bits
         """
@@ -326,57 +281,52 @@ class Airview(threading.Thread):
         src = frame["src"]
         dst = frame["dst"]
         ds = frame["ds"]
+        assoicated = None
+        wired = None
+        # actual client mac
+        clientmac = None
+
         if ds == 0:
             # broadcast/adhoc
-            self.clients[src] = "Not Associated"
-            if src in self.clientsExtra.keys():
-                self.clientsExtra[src]['wired'] = False
-            else:
-                self.clientsExtra[src] = {'wired':False}
+            assoicated = "Not Associated"
+            wired = False
+            clientmac = src
+
         elif ds == 1:
             # station to ap
-            self.clients[src] = bssid
-            if src in self.clientsExtra.keys():
-                self.clientsExtra[src]['wired'] = False
-            else:
-                self.clientsExtra[src] = {'wired':False}
-            return
+            assoicated = bssid
+            wired = False
+            clientmac = src
+        
         elif ds == 2:
             # ap to station
+            clientmac = src
+            assoicated = bssid
             # check for wired broadcasts
             if self.rd.isBcast(dst) is True:
-                #were doing with a wired broadcast
-                #make sure we show its connected to an ap
-                self.clients[src] = bssid
-                if src in self.clientsExtra.keys():
-                    # dont set a wireless client to wired
-                    if self.clientsExtra[src]['wired'] is not False:
-                        self.clientsExtra[src]['wired'] = True
-                else:
-                    self.clientsExtra[src] = {'wired':True}
-            # deal with ipv6 mutlicast
-            elif self.rd.isBcast(dst) is True:
-                #were doing with a wired broadcast
-                #make sure we show its connected to an ap
-                self.clients[src] = bssid
-                if src in self.clientsExtra.keys():
-                    # dont set a wireless client to wired
-                    if self.clientsExtra[src]['wired'] is not False:
-                        self.clientsExtra[src]['wired'] = True
-                else:
-                    self.clientsExtra[src] = {'wired':True}
+                #were working with a wired broadcast
+                wired = True
             else:
-                self.clients[dst] = bssid
-                if src in self.clientsExtra.keys():
-                    self.clientsExtra[src]['wired'] = False
-                else:
-                    self.clientsExtra[src] = {'wired':False}
-            return
+                wired = False
         elif ds == 3:
             # wds, were ignoring this for now
             return
-        else:
-            return
+        client_obj = None
+        if clientmac not in self.clientObject.keys(): 
+            self.clientObject[clientmac] = client(clientmac)
+        client_obj = self.clientObject[clientmac]
+        client_obj.wired = wired
+        client.assoicated = assoicated
+        #update last time seen
+        client.lts = time.time()
+        #update access points with connected clients
+        if bssid not in self.apObjects.keys():
+            # create new object
+            self.apObjects[bssid] = accessPoint(bssid)
+        # update list of clients connected to an AP
+        ###NOTE right now a client can show up connected to more the one AP
+        ap_object = self.apObjects[bssid]
+        ap_oject.connectedclients.append(clientmac)
 
     def parse(self):
         """
@@ -404,73 +354,38 @@ class Airview(threading.Thread):
             
             if frame["type"] == 0 and frame["stype"] == 8:
                 # beacon packet
-                ap_obj = None
+                ap_object = None
                 bssid = frame["bssid"]
                 essid = frame["essid"]
                 # grab the AP object or create it if it doesnt exist
-                if bssid in self.apObjects.keys()
-                    ap_obj = self.apObjects[bssid]
-                else:
+                if bssid not in self.apObjects.keys():
+                    # create new object
                     self.apObjects[bssid] = accessPoint(bssid)
-                    ap_obj = self.apObjects[bssid]
+                ap_object = self.apObjects[bssid]
                 # update essid
                 ap_object.updateEssid(essid)
+                # update ap_last time seen
+                ap_object.lts = time.time()
                 # update the ess 
-                if ap_obj.essid in self.essObjects.keys()
+                if ap_object.essid in self.essObjects.keys():
                     if bssid not in self.essObjects[essid].points:
                         self.essObjects[essid].points.append(bssid)
                 #need to update other ap features
             
             elif frame["type"] == 2 and frame["stype"] in range(0,16):
                 #applying to all data packets
-                self.updateClient(frame)
+                self.processData(frame)
             
             if frame["type"] == 0 and frame["stype"] in [4]:
                 # update client list
-                self.updateClient(frame)
+                self.processData(frame)
                 # process probe for essid
                 src = frame["src"]
                 essid = frame["essid"]
-                if frame["src"] in self.clientProbes.keys():
-                    if essid != '':
-                        self.clientProbes[src][essid] = ""
-                else:
-                    # use dict behaivor to remove duplicates
-                    if essid != '':
-                        self.clientProbes[src] = {essid:""}
-            # update client ap relationships
-            self.getCapr()
-
-    def getCapr(self, wiredc=False):
-        """
-        Parse clients list to build current list 
-        of bssids and their clients
-        set wiredc to True to include wired devices discovered by broadcast
-        """
-        for client in self.clients.keys():
-            # include or exclude wired devices
-            if wiredc is False:
-              if client in self.clientsExtra.keys():
-                if self.clientsExtra[client]['wired'] is False:
-                    # skip the wired devices
-                    continue
-            bssid = self.clients[client]
-            if bssid != "Not Associated":
-                if bssid not in self.capr.keys():
-                    self.capr[bssid] = [client]
-                else:
-                    if client not in self.capr[bssid]:
-                        self.capr[bssid].append(client)
-
-    def getProbes(self, cmac):
-        """
-        return a list of probe requests 
-        for a given client
-        """
-        if cmac in self.clientProbes.keys():
-            return self.clientProbes[cmac].keys()
-        else:
-            return None
+                if src not in self.clientObject.keys(): 
+                    self.clientObject[clientmac] = client(src)
+                client_obj = self.clientObject[src]
+                client_obj.probes.append(essid)
 
     def run(self):
         """
