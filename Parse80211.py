@@ -362,6 +362,9 @@ class Parse80211:
         # deal with ipv6multi cast addresses
         elif mac[:2] == self.packetBcast["ipv6m"][:2]:
             return True
+        # deal with ipv4multi cst address
+        elif mac[:2] == self.packetBcast["ipv4m"][:2]:
+            return True
         else:
             return False
 
