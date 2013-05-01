@@ -67,13 +67,14 @@ class client:
         """
         mac = client mac address in hex
         """
-        self.fts = time.time()       # first time object is seen
-        self.lts = None              # last time object is seen, update on every access 
-        self.name = "client"         # object type
-        self.mac = mac               # client mac address
-        self.probes = []             # list of probe requests client broadcast
-        self.assoicated = False      # list if client is associated to an ap
-        self.bssid = "Not Assoicate" # Bssid of assoicated ap
+        self.fts = time.time()        # first time object is seen
+        self.lts = None               # last time object is seen, update on every access 
+        self.name = "client"          # object type
+        self.mac = mac                # client mac address
+        self.probes = []              # list of probe requests client broadcast
+        self.assoicated = False       # list if client is associated to an ap
+        self.bssid = "Not Assoicated" # Bssid of assoicated ap
+        self.wired = False            # not a wired client by default
 
     def numProbes(self):
         """
