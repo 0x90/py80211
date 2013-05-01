@@ -83,7 +83,7 @@ if __name__ == "__main__":
                     assoicatedState = clients[mac].bssid
                 probes = clients[mac].probes
                 # print out a probe list, otherwise just print the client and its assoication
-                if probes != None:
+                if probes != []:
                     print prettymac, assoicatedState, ','.join(probes)
                 else:
                     print prettymac, assoicatedState
