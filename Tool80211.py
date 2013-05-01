@@ -256,7 +256,7 @@ class Airview(threading.Thread):
         #### New code ####
         # dict object to store client objects in 
         # format is {mac_address:object}
-        self.clientObjects = {}
+        self.clientObjectss = {}
         # dict object to store ap objects in
         # format is {bssid:object}
         self.apObjects = {}
@@ -312,9 +312,9 @@ class Airview(threading.Thread):
             # wds, were ignoring this for now
             return
         client_obj = None
-        if clientmac not in self.clientObject.keys(): 
-            self.clientObject[clientmac] = client(clientmac)
-        client_obj = self.clientObject[clientmac]
+        if clientmac not in self.clientObjects.keys(): 
+            self.clientObjects[clientmac] = client(clientmac)
+        client_obj = self.clientObjects[clientmac]
         client_obj.wired = wired
         client.assoicated = assoicated
         #update last time seen
@@ -382,9 +382,9 @@ class Airview(threading.Thread):
                 # process probe for essid
                 src = frame["src"]
                 essid = frame["essid"]
-                if src not in self.clientObject.keys(): 
-                    self.clientObject[clientmac] = client(src)
-                client_obj = self.clientObject[src]
+                if src not in self.clientObjects.keys(): 
+                    self.clientObjects[clientmac] = client(src)
+                client_obj = self.clientObjects[src]
                 client_obj.probes.append(essid)
 
     def run(self):
