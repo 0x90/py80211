@@ -572,7 +572,7 @@ class Parse80211:
                 if len(encryption) > 1:
                     encryption = '/'.join(encryption)
                 else:
-                    encryption = encrption[0]
+                    encryption = encryption[0]
                 for akm in self.IE.tagdata['rsn']['akm']:
                     authkey.append(akm['akmType'])
                 if len(encryption) > 1:
@@ -588,7 +588,7 @@ class Parse80211:
                 if len(encryption) > 1:
                     encryption = '/'.join(encryption)
                 else:
-                    encryption = encrption[0]
+                    encryption = encryption[0]
                 for akm in self.IE.tagdata['wpa']['akm']:
                     authkey.append(akm['akmType'])
                 if len(encryption) > 1:
