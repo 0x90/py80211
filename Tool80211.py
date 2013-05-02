@@ -379,6 +379,9 @@ class Airview(threading.Thread):
                 ap_object = self.apObjects[bssid]
                 # update essid
                 ap_object.updateEssid(essid)
+                #update ap encryption
+                ap_object.encryption = frame["encryption"]
+                ap_object.auth = frame["auth"]
                 # update ap_last time seen
                 ap_object.lts = time.time()
                 # update the ess
