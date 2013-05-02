@@ -192,7 +192,7 @@ class ChannelHop(threading.Thread):
         else:
             return -1
 
-    def hop(self, dwell=.4):
+    def hop(self, dwell=.5):
         """
         Hop channels
         """
@@ -211,7 +211,7 @@ class ChannelHop(threading.Thread):
                     # we want to sit on 1 6 and 11 a bit longer
                     time.sleep(dwell)
                 else:
-                    time.sleep(.2)
+                    time.sleep(.3)
     
     def run(self):
         """
