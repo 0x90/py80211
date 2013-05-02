@@ -19,7 +19,7 @@ class accessPoint:
         self.fts = time.time()      # first time object is seen
         self.lts = None             # last time object is seen, update on every acccess
         self.name = "accessPoint"   # object type
-        self.connectedclients = []  # list of connected clients
+        self.connectedClients = []  # list of connected clients
         self.essid = ""             # broadcasted essid
         self.bssid = bssid          # bssid of ap
         self.hidden = False         # denote if essid is hidden
@@ -29,6 +29,27 @@ class accessPoint:
         self.channel = None         # ap's channel
         self.ssidList = []          # rolling list of seen ssid's for this ap
     
+    def addClients(self):
+        """
+        update connected clients and ensure they are unique
+        """
+        try:
+            self.connectedClients.index(probe)
+        except ValueError:
+            self.connectedClients.append(probe)
+    
+    def delClients(self):
+        """
+        remove a client from connectedClients list
+        """
+        try:
+            self.connectedClients.del(self.connectedClients.index(probe))
+            # it worked to return 0
+            return 0
+        except ValueError:
+            # it failed return -1
+            return -1
+
     def numClients(self):
         """
         return number of connected clients
@@ -77,7 +98,8 @@ class client:
         self.assoicated = False       # list if client is associated to an ap
         self.bssid = "Not Assoicated" # Bssid of assoicated ap
         self.wired = False            # not a wired client by default
-    
+        self.lastBssid = None         # last connected bssid
+
     def updateProbes(self, probe):
         """
         update probes list and keep it unique
@@ -93,3 +115,11 @@ class client:
         as an int
         """
         return len(self.probes)
+
+    def updateBssid(self, bssid):
+        """
+        update last connected and
+        current connected bssids
+        """
+       self.lastBssid = self.bssid
+       self.bssid = bssid
