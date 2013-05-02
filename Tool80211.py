@@ -382,6 +382,7 @@ class Airview(threading.Thread):
                 # update ap encryption
                 ap_object.encryption = frame["encryption"]
                 ap_object.auth = frame["auth"]
+                ap_object.cipher = frame["cipher"]
                 # update channel
                 ap_object.channel = frame["channel"]
                 # update ap_last time seen
