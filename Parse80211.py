@@ -576,9 +576,9 @@ class Parse80211:
                 for akm in self.IE.tagdata['rsn']['akm']:
                     authkey.append(akm['akmType'])
                 if len(encryption) > 1:
-                    authkey = "wpa2" + "/".join(authkey)
+                    authkey = "wpa2 " + "/".join(authkey)
                 else:
-                    authkey = "wpa2" + amk[0]
+                    authkey = "wpa2 " + amk[0]
             elif "wpa" in tagKeys:
                 # its wpa1
                 encryption = []
@@ -592,9 +592,9 @@ class Parse80211:
                 for akm in self.IE.tagdata['wpa']['akm']:
                     authkey.append(akm['akmType'])
                 if len(encryption) > 1:
-                    authkey = "wpa" + "/".join(authkey)
+                    authkey = "wpa " + "/".join(authkey)
                 else:
-                    authkey = "wpa" + amk[0]
+                    authkey = "wpa " + amk[0]
             elif self.wepbit is True:
                 authkey = "open"
                 encryption = "WEP 64/128"
