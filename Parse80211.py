@@ -385,7 +385,8 @@ class Parse80211:
         Determine the type of frame and
         choose the right parser
         """
-        wepbit = False
+        # set the web bit for the packet
+        self.wepbit = False
         if frame is not None:
             data = frame[1]
             if data is None:
@@ -410,7 +411,7 @@ class Parse80211:
         # protected data bit aka the WEP bit
         flags = ord(data[self.rt + 1])
         if (flags & 64):
-            wepbit = True
+            self.wepbit = True
         if ftype in self.parser.keys():
             if stype in self.parser[ftype].keys():
                 # will return -1 if packet is mangled
@@ -422,7 +423,7 @@ class Parse80211:
                 else:
                     parsedFrame["type"] = ftype
                     parsedFrame["stype"] = stype
-                    parsedFrame["wepbit"] = wepbit
+                    parsedFrame["wepbit"] = self.wepbit
                     # strip the headers
                     parsedFrame['rtap'] = self.rt
                     parsedFrame["raw"] = data
@@ -540,6 +541,8 @@ class Parse80211:
         src, dst, bssid, essid, channel ....
         going to need to add more
         """
+        akm = None
+        encryption = None
         try:
             dsbits = ord(data[1]) & 3
             dst = data[4:10]  # destination addr 6 bytes
@@ -559,12 +562,56 @@ class Parse80211:
                 return -1
             else:
                 channel = self.IE.tagdata["channel"]
+            # determine encryption level
+            tagKeys = self.IE.tagdata.keys()
+            if "rsn" in tagKeys:
+                encryption = []
+                authkey = []
+                for ptk in self.IE.tagdata['rsn']['ptkcs']:
+                    encryption.append(ptk['ptkcsType'])
+                if len(encryption) > 1:
+                    encryption = '/'.join(encryption)
+                else:
+                    encryption = encrption[0]
+                for akm in self.IE.tagdata['rsn']['akm']:
+                    authkey.append(akm['akmType'])
+                if len(encryption) > 1:
+                    authkey = "/".join(authkey)
+                else:
+                    authkey = amk[0]
+            elif "wpa" in tagKeys:
+                # its wpa1
+                encryption = []
+                authkey = []
+                for ptk in self.IE.tagdata['wpa']['ptkcs']:
+                    encryption.append(ptk['ptkcsType'])
+                if len(encryption) > 1:
+                    encryption = '/'.join(encryption)
+                else:
+                    encryption = encrption[0]
+                for akm in self.IE.tagdata['wpa']['akm']:
+                    authkey.append(akm['akmType'])
+                if len(encryption) > 1:
+                    authkey = "/".join(authkey)
+                else:
+                    authkey = amk[0]
+            elif self.wepbit is True:
+                authkey = "open"
+                encryption = "WEP 64/128"
+            elif self.webit is False:
+                # its open
+                authkey = "open"
+                encryption = "open"
+            else:
+                authkey = "Unknown"
+                encryption = "Unknown"
         except IndexError:
             self.mangled = True
             self.mangledcount += 1
             return -1
         return {"bssid":bssid, "essid":essid, "src":src, "dst":dst, 
-            "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
+            "channel":channel, "extended":self.IE.tagdata, "ds":dsbits,
+            "encryption":encryption, "auth":authkey}
 
 if __name__ == "__main__":
     x = Parse80211(sys.argv[1])
