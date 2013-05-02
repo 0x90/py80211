@@ -25,6 +25,7 @@ class accessPoint:
         self.hidden = False         # denote if essid is hidden
         self.encryption = "Unknown" # show encryption level
         self.auth = "Unknown"       # show authentication settings
+        self.cipher = "Unknown"     # cipher, either CCMP, TKIP, wep 64/128
         self.channel = None         # ap's channel
         self.ssidList = []          # rolling list of seen ssid's for this ap
     
