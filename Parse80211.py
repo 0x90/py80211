@@ -569,53 +569,58 @@ class Parse80211:
             # determine encryption level
             tagKeys = self.IE.tagdata.keys()
             if "rsn" in tagKeys:
-                encryption = []
+                encryption = 'wpa2'
+                cipher = []
                 authkey = []
                 for ptk in self.IE.tagdata['rsn']['ptkcs']:
-                    encryption.append(ptk['ptkcsType'])
-                if len(encryption) > 1:
-                    encryption = '/'.join(encryption)
+                    cipher.append(ptk['ptkcsType'])
+                if len(cipher) > 1:
+                    cipher = '/'.join(cipher)
                 else:
-                    encryption = encryption[0]
+                    cipher = cipher[0]
                 for akm in self.IE.tagdata['rsn']['akm']:
                     authkey.append(akm['akmType'])
-                if len(encryption) > 1:
-                    authkey = "wpa2 " + "/".join(authkey)
+                if len(authkey) > 1:
+                    authkey = "/".join(authkey)
                 else:
-                    authkey = "wpa2 " + amk[0]
+                    authkey = authkey[0]
             elif "wpa" in tagKeys:
                 # its wpa1
-                encryption = []
+                encryption = 'wpa'
+                cipher = []
                 authkey = []
                 for ptk in self.IE.tagdata['wpa']['ptkcs']:
-                    encryption.append(ptk['ptkcsType'])
-                if len(encryption) > 1:
-                    encryption = '/'.join(encryption)
+                    cipher.append(ptk['ptkcsType'])
+                if len(cipher) > 1:
+                    cipher = '/'.join(cipher)
                 else:
-                    encryption = encryption[0]
+                    cipher = cipher[0]
                 for akm in self.IE.tagdata['wpa']['akm']:
                     authkey.append(akm['akmType'])
-                if len(encryption) > 1:
-                    authkey = "wpa " + "/".join(authkey)
+                if len(authkey) > 1:
+                    authkey = "/".join(authkey)
                 else:
-                    authkey = "wpa " + amk[0]
+                    authkey = authkey[0]
             elif beaconWepBit is True:
                 authkey = "open"
-                encryption = "WEP 64/128"
+                cipher = "WEP 64/128"
+                encryption = 'WEP'
             elif beaconWepBit is False:
                 # its open
                 authkey = "open"
                 encryption = "open"
+                cipher = "None"
             else:
                 authkey = "Unknown"
                 encryption = "Unknown"
+                cipher = "Unknown"
         except IndexError:
             self.mangled = True
             self.mangledcount += 1
             return -1
         return {"bssid":bssid, "essid":essid, "src":src, "dst":dst, 
             "channel":channel, "extended":self.IE.tagdata, "ds":dsbits,
-            "encryption":encryption, "auth":authkey}
+            "encryption":encryption, "auth":authkey, "cipher":cipher}
 
 if __name__ == "__main__":
     x = Parse80211(sys.argv[1])
