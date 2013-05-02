@@ -60,7 +60,9 @@ if __name__ == "__main__":
             for bssid in bss.keys():
                 apbssid = ppmac(bssid)
                 essid = bss[bssid].essid
-                print ("%s %s" %(apbssid, essid)).encode("utf-8")
+                enc = bss[bssid].encryption
+                auth = bss[bssid].auth
+                print ("%s %s %s %s" %(apbssid, essid, enc, auth)).encode("utf-8")
 
             """
             Print out the clients and anything they are assoicated to
