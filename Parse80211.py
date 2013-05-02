@@ -385,7 +385,7 @@ class Parse80211:
         Determine the type of frame and
         choose the right parser
         """
-        # set the web bit for the packet
+        # set the wep bit for the packet
         self.wepbit = False
         if frame is not None:
             data = frame[1]
@@ -598,7 +598,7 @@ class Parse80211:
             elif self.wepbit is True:
                 authkey = "open"
                 encryption = "WEP 64/128"
-            elif self.webit is False:
+            elif self.wepbit is False:
                 # its open
                 authkey = "open"
                 encryption = "open"
