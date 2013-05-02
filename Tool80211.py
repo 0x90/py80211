@@ -328,7 +328,7 @@ class Airview(threading.Thread):
         client_obj.wired = wired
         client_obj.assoicated = assoicated
         if assoicated is True:
-            client_obj.bssid = bssid
+            client_obj.updateBssid(bssid)
         #update last time seen
         client_obj.lts = time.time()
         #update access points with connected clients
