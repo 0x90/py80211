@@ -63,7 +63,8 @@ if __name__ == "__main__":
                 enc = bss[bssid].encryption
                 auth = bss[bssid].auth
                 channel = bss[bssid].channel
-                print ("%s %s %s %s %s" %(apbssid, essid, enc, auth, channel)).encode("utf-8")
+                cipher = bss[bssid].cipher
+                print ("%s %s %s %s %s %s" %(apbssid, essid, enc, cipher, auth, channel)).encode("utf-8")
 
             """
             Print out the clients and anything they are assoicated to
