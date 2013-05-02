@@ -465,7 +465,7 @@ class Parse80211:
             self.mangled = True
             self.mangledcount += 1
             return -1
-        return {"src":src, "dst":dst, "bssid":bssid, "ds":dsbits}
+        return {"src":src, "dst":dst, "bssid":bssid, "ds":dsbits, "wepbit":self.wepbit}
 
     def probeResp(self, data):
         """
@@ -549,6 +549,10 @@ class Parse80211:
             src = data[10:16]  # source addr 6 bytes
             bssid = data[16:22]  # bssid addr 6 bytes
             # parse the IE tags
+            # bits 34 and 35 are capabilities
+            beaconWepBit = False
+            if (struct.unpack('h', data[34:36])[0] & 16):
+                beaconWepBit = True
             self.IE.parseIE(data[36:])
             if "ssid" not in self.IE.tagdata.keys():
                 self.mangled = True
@@ -595,10 +599,10 @@ class Parse80211:
                     authkey = "wpa " + "/".join(authkey)
                 else:
                     authkey = "wpa " + amk[0]
-            elif self.wepbit is True:
+            elif beaconWepBit is True:
                 authkey = "open"
                 encryption = "WEP 64/128"
-            elif self.wepbit is False:
+            elif beaconWepBit is False:
                 # its open
                 authkey = "open"
                 encryption = "open"
