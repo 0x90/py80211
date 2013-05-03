@@ -291,9 +291,9 @@ class Parse80211:
             5: self.probeResp,  # probe response
             8: self.beacon,     # beacon
             9: self.placedef,   # ATIM
-            10: self.placedef,  # disassoication
+            10: self.deauthDisass,  # disassoication
             11: self.placedef,  # authentication
-            12: self.placedef,  # deauthentication
+            12: self.deauthDisass,  # deauthentication
             }, 1:{},  # control frames
             2:{  # data frames
              0: self.fdata,  # data
@@ -534,6 +534,23 @@ class Parse80211:
         return {"bssid":bssid, "essid":essid, "src":src, 
             "dst":dst, "channel":channel, "extended":self.IE.tagdata, "ds":dsbits}
     
+    def deauthDisass(self, data):
+        """
+        Parse out a deauthentication or disassoication packet
+        """
+        try:
+            dsbits = ord(data[1]) & 3
+            dst = data[4:10]  # destination addr 6 bytes
+            src = data[10:16]  # source addr 6 bytes
+            bssid = data[16:22]  # bssid addr 6 bytes
+            reasonCode = struct.unpack('h', data[-2:])[0]
+        except IndexError:
+            self.mangled = True
+            self.mangledcount += 1
+            return -1
+        return {"bssid":bssid, "src":src, "reasonCode":reasonCode,
+            "dst":dst, "ds":dsbits}
+
     def beacon(self, data):
         """
         Parse out beacon packets
