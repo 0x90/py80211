@@ -325,7 +325,7 @@ class Airview(threading.Thread):
         if clientmac not in self.clientObjects.keys(): 
             self.clientObjects[clientmac] = client(clientmac)
         client_obj = self.clientObjects[clientmac]
-        client_obj.wired = wired
+        client_obj.updateWired(wired)
         client_obj.assoicated = assoicated
         if assoicated is True:
             client_obj.updateBssid(bssid)
@@ -423,6 +423,7 @@ class Airview(threading.Thread):
                         client_obj = self.clientObjects[addy]
                         client_obj.assoicated = False
                         client_obj.updateBssid("Not Assoicated")
+                        client_obj.lts = time.time()
                         if bssid in self.apObjects.keys():
                             self.apObjects[bssid].delClients(addy)
 
