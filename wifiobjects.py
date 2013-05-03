@@ -121,5 +121,5 @@ class client:
         update last connected and
         current connected bssids
         """
-       self.lastBssid = self.bssid
-       self.bssid = bssid
+        self.lastBssid = self.bssid
+        self.bssid = bssid
