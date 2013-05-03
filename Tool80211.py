@@ -411,6 +411,7 @@ class Airview(threading.Thread):
                     self.clientObjects[clientmac] = client(src)
                 client_obj = self.clientObjects[src]
                 client_obj.updateProbes(essid)
+                client_obj.managedFrame = True
                 client_obj.lts = time.time()
 
             elif frame["type"] == 0 and frame["stype"] in [10,12]:
@@ -423,6 +424,7 @@ class Airview(threading.Thread):
                         client_obj = self.clientObjects[addy]
                         client_obj.assoicated = False
                         client_obj.updateBssid("Not Assoicated")
+                        cleint_obj.managedFrame = True
                         client_obj.lts = time.time()
                         if bssid in self.apObjects.keys():
                             self.apObjects[bssid].delClients(addy)
