@@ -129,5 +129,5 @@ class client:
         """
         prevent a wireless client from being marked wired
         """
-        if self.managedFrame not True:
+        if self.managedFrame is not True:
             self.wired = state
