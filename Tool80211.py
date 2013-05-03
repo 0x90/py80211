@@ -424,7 +424,7 @@ class Airview(threading.Thread):
                         client_obj = self.clientObjects[addy]
                         client_obj.assoicated = False
                         client_obj.updateBssid("Not Assoicated")
-                        cleint_obj.managedFrame = True
+                        client_obj.managedFrame = True
                         client_obj.lts = time.time()
                         if bssid in self.apObjects.keys():
                             self.apObjects[bssid].delClients(addy)
