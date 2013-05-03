@@ -20,7 +20,7 @@ class accessPoint:
         self.lts = None             # last time object is seen, update on every acccess
         self.name = "accessPoint"   # object type
         self.connectedClients = []  # list of connected clients
-        self.essid = ""             # broadcasted essid
+        self.essid = "Hidden?"      # broadcasted essid
         self.bssid = bssid          # bssid of ap
         self.hidden = False         # denote if essid is hidden
         self.encryption = "Unknown" # show encryption level
