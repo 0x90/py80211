@@ -395,7 +395,6 @@ class Airview(threading.Thread):
                 if ap_object.essid in self.essObjects.keys():
                     if bssid not in self.essObjects[essid].points:
                         self.essObjects[essid].points.append(bssid)
-                #need to update other ap features
             
             elif frame["type"] == 2 and frame["stype"] in range(0,16):
                 #applying to all data packets
@@ -413,6 +412,19 @@ class Airview(threading.Thread):
                 client_obj = self.clientObjects[src]
                 client_obj.updateProbes(essid)
                 client_obj.lts = time.time()
+
+            elif frame["type"] == 0 and frame["stype"] in [10,12]:
+                # deauth/disassoicate
+                src = frame["src"]
+                dst = frame["dst"]
+                bssid = frame["bssid"]
+                for addy in [src, dst]: 
+                    if addy in self.clientObjects.keys():
+                        client_obj = self.clientObjects[addy]
+                        client_obj.assoicated = False
+                        client_obj.updateBssid("Not Assoicated")
+                        if bssid in self.apObjects.keys():
+                            self.apObjects[bssid].delClients(addy)
 
     def run(self):
         """
