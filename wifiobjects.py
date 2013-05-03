@@ -99,6 +99,7 @@ class client:
         self.bssid = "Not Assoicated" # Bssid of assoicated ap
         self.wired = False            # not a wired client by default
         self.lastBssid = None         # last connected bssid
+        self.managedFrame = False     # have we seen a managment frame from this client?
 
     def updateProbes(self, probe):
         """
@@ -123,3 +124,10 @@ class client:
         """
         self.lastBssid = self.bssid
         self.bssid = bssid
+
+    def updateWired(self, state):
+        """
+        prevent a wireless client from being marked wired
+        """
+        if self.managedFrame not True:
+            self.wired = state
