@@ -329,10 +329,13 @@ class Airview(threading.Thread):
         client_obj.assoicated = assoicated
         if assoicated is True:
             client_obj.updateBssid(bssid)
+            # remove client from old bssid if moved to new bssid
+            if client_obj.lastBssid != bssid:
+                if bssid in self.apObjects.keys():
+                    self.apObjects[bssid].delClients(clientmac)
         #update last time seen
         client_obj.lts = time.time()
         #update access points with connected clients
-        ###NOTE right now a client can show up connected to more the one AP
         # create ap objects based on bssids seen from clients
         # make sure we dont do broadcast addresses
         if self.rd.isBcast(bssid) is False:
@@ -341,7 +344,7 @@ class Airview(threading.Thread):
                 self.apObjects[bssid] = accessPoint(bssid)
             # update list of clients connected to an AP
             ap_object = self.apObjects[bssid]
-            ap_object.connectedclients.append(clientmac)
+            ap_object.addClients(clientmac)
 
     def parse(self):
         """
