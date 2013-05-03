@@ -43,7 +43,7 @@ class accessPoint:
         remove a client from connectedClients list
         """
         try:
-            self.connectedClients.del(self.connectedClients.index(probe))
+            self.connectedClients.remove(probe)
             # it worked to return 0
             return 0
         except ValueError:
