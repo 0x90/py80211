@@ -29,21 +29,21 @@ class accessPoint:
         self.channel = None         # ap's channel
         self.ssidList = []          # rolling list of seen ssid's for this ap
     
-    def addClients(self):
+    def addClients(self, client):
         """
         update connected clients and ensure they are unique
         """
         try:
-            self.connectedClients.index(probe)
+            self.connectedClients.index(client)
         except ValueError:
-            self.connectedClients.append(probe)
+            self.connectedClients.append(client)
     
-    def delClients(self):
+    def delClients(self, client):
         """
         remove a client from connectedClients list
         """
         try:
-            self.connectedClients.remove(probe)
+            self.connectedClients.remove(client)
             # it worked to return 0
             return 0
         except ValueError:
