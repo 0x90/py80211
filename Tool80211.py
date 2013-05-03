@@ -401,7 +401,7 @@ class Airview(threading.Thread):
                 #applying to all data packets
                 self.processData(frame)
             
-            if frame["type"] == 0 and frame["stype"] in [4]:
+            elif frame["type"] == 0 and frame["stype"] in [4]:
                 # probes parsing
                 # update client list
                 self.processData(frame)
