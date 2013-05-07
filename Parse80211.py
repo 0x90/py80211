@@ -358,13 +358,10 @@ class Parse80211:
         """
         returns boolen if mac is a broadcast/multicast mac
         """
+        for bcastType in ['ipv6m', 'ipv4m', 'v6Neigh']:
+            if mac[:3] == self.packetBcast[bcastType][:3]:
+                return True
         if mac in self.packetBcast.values():
-            return True
-        # deal with ipv6multi cast addresses
-        elif mac[:3] == self.packetBcast["ipv6m"][:3]:
-            return True
-        # deal with ipv4multi cst address
-        elif mac[:3] == self.packetBcast["ipv4m"][:3]:
             return True
         else:
             return False
@@ -379,6 +376,12 @@ class Parse80211:
         return a frame from libpcap
         """
         return self.lp.next()
+    
+    def parseRtap(self, rtap):
+        """
+        basic rtap parser to get signal dbm
+        """
+        if len(rtap) == 18:
 
     def parseFrame(self, frame):
         """
