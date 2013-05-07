@@ -382,7 +382,7 @@ class Parse80211:
         basic rtap parser to get signal dbm
         """
         if len(rtap) == 18:
-
+            pass
     def parseFrame(self, frame):
         """
         Determine the type of frame and
