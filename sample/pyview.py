@@ -64,7 +64,8 @@ if __name__ == "__main__":
                 auth = bss[bssid].auth
                 channel = bss[bssid].channel
                 cipher = bss[bssid].cipher
-                print ("%s %s %s %s %s %s" %(apbssid, essid, enc, cipher, auth, channel)).encode("utf-8")
+                oui = bss[bssid].oui
+                print ("%s %s %s %s %s %s %s" %(apbssid, essid, enc, cipher, auth, channel, oui)).encode("utf-8")
 
             """
             Print out the clients and anything they are assoicated to
@@ -86,11 +87,12 @@ if __name__ == "__main__":
                 else:
                     assoicatedState = clients[mac].bssid
                 probes = clients[mac].probes
+                oui = clients[mac].oui
                 # print out a probe list, otherwise just print the client and its assoication
                 if probes != []:
-                    print prettymac, assoicatedState, ','.join(probes)
+                    print prettymac, assoicatedState, oui, ','.join(probes)
                 else:
-                    print prettymac, assoicatedState
+                    print prettymac, assoicatedState, oui
     except KeyboardInterrupt:
         print "\nbye\n"
         airmonitor.kill()
