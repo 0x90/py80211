@@ -1,4 +1,19 @@
 import time
+import liboui2
+
+
+def pformatMac(hexbytes):
+    """
+    Take in hex bytes and pretty format them 
+    to the screen in the xx:xx:xx:xx:xx:xx format
+    and the xx-xx-xx-xx-xx-xx
+    """
+    mac = []
+    for byte in hexbytes:
+        mac.append(byte.encode('hex').upper())
+    # return a delimiter dict
+    return {"-":'-'.join(mac), ":":':'.join(mac)}
+
 
 class ess:
     """
@@ -28,7 +43,16 @@ class accessPoint:
         self.cipher = "Unknown"     # cipher, either CCMP, TKIP, wep 64/128
         self.channel = None         # ap's channel
         self.ssidList = []          # rolling list of seen ssid's for this ap
-    
+        self.oui = self.populateOUI() # lookup the object oui
+
+    def populateOUI(self):
+        """
+        populate the OUI vars for the object
+        uses liboui2
+        """
+        myoui = liboui2.Oui('oui.txt')
+        return myoui.search(pformatMac(self.bssid[:3])[":"], "m")
+
     def addClients(self, client):
         """
         update connected clients and ensure they are unique
@@ -100,6 +124,15 @@ class client:
         self.wired = False            # not a wired client by default
         self.lastBssid = None         # last connected bssid
         self.managedFrame = False     # have we seen a managment frame from this client?
+        self.oui = self.populateOUI() # populate clients oui lookup
+
+    def populateOUI(self):
+        """
+        populate the OUI vars for the object
+        uses liboui2
+        """
+        myoui = liboui2.Oui('oui.txt')
+        return myoui.search(pformatMac(self.mac[:3])[":"], "m")
 
     def updateProbes(self, probe):
         """
