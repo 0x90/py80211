@@ -29,8 +29,6 @@ class typeCheck:
         self.pyobj = "%s.pyobj" %(self.filename)
         self.typeSearch4 = {}
         self.typeSearch3 = {}
-        print "started."
-        print "Searching for pre-compiled OUI pyobj"
         if self.loadobj() is False:
                 self.parse(self.readin())
                 self.dumpobj()
@@ -74,7 +72,6 @@ class typeCheck:
         data = (self.typeSearch4, self.typeSearch3)
         with open(self.pyobj, 'w') as dumpfile:
             dumpfile.write(marshal.dumps(data))
-        print "Pre-parsed dictionary dumped to %s" %(self.pyobj)
     
     def loadobj(self):
         """ 
@@ -87,7 +84,6 @@ class typeCheck:
             data = marshal.loads(dumpfile.read())
         self.typeSearch4 = data[0]
         self.typeSearch3 = data[1]
-        print "Object file loaded into memory"
     
             
 class Oui:
@@ -124,8 +120,6 @@ class Oui:
         self.pyobj = "%s.pyobj" %(self.filename)
         self.the_hash = {}
         self.style = parser
-        print "started."
-        print "Searching for pre-compiled OUI pyobj"
         if self.loadobj() is False:
             if self.download():
                 self.parse()
@@ -159,7 +153,6 @@ class Oui:
             return False
         with open(self.pyobj, 'r') as dumpfile:
             self.the_hash = marshal.loads(dumpfile.read())
-        print "Object file loaded into memory"
     
 
     def parse(self):
@@ -167,7 +160,6 @@ class Oui:
         """
         style allows us to overload method for different file formats
         """
-        print "parsing list"
         with open(self.filename, 'r') as oui_file:
             #IEEE STYLE OUI
             if self.style == "ieee":
