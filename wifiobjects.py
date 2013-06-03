@@ -124,7 +124,7 @@ class client:
         self.wired = False            # not a wired client by default
         self.lastBssid = None         # last connected bssid
         self.managedFrame = False     # have we seen a managment frame from this client?
-        self.company = self.populateOUI() # populate clients oui lookup
+        self.oui = self.populateOUI() # populate clients oui lookup
 
     def populateOUI(self):
         """
