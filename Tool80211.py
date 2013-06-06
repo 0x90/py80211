@@ -328,7 +328,14 @@ class Airview(threading.Thread):
         client_obj.updateWired(wired)
         client_obj.assoicated = assoicated
         if assoicated is True:
-            client_obj.updateBssid(self.apObjects[bssid])
+            """
+            may get client before we see ap, 
+            check to see if we have ap object yet
+            if we do add reference link
+            """
+            if bssid in self.apObjects.keys():
+                client_obj.apObject = self.apObjects[bssid]
+            client_obj.updateBssid(bssid)
             # remove client from old bssid if moved to new bssid
             if client_obj.lastBssid != bssid:
                 if bssid in self.apObjects.keys():
