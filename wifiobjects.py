@@ -125,6 +125,7 @@ class client:
         self.lastBssid = None         # last connected bssid
         self.managedFrame = False     # have we seen a managment frame from this client?
         self.oui = self.populateOUI() # populate clients oui lookup
+        self.apObject = None          # stores reference link to ap object when connected to bssid
 
     def populateOUI(self):
         """
