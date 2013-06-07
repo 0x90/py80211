@@ -1,19 +1,15 @@
 import time
 import liboui2
 
-
-def pformatMac(hexbytes):
+def pformatMac(hexbytes,delimiter):
     """
-    Take in hex bytes and pretty format them 
+    Take in hex bytes and pretty format them
     to the screen in the xx:xx:xx:xx:xx:xx format
-    and the xx-xx-xx-xx-xx-xx
     """
     mac = []
     for byte in hexbytes:
-        mac.append(byte.encode('hex').upper())
-    # return a delimiter dict
-    return {"-":'-'.join(mac), ":":':'.join(mac)}
-
+        mac.append(byte.encode('hex'))
+    return delimiter.join(mac)
 
 class ess:
     """
@@ -51,7 +47,7 @@ class accessPoint:
         uses liboui2
         """
         myoui = liboui2.Oui('oui.txt')
-        return myoui.search(pformatMac(self.bssid[:3])[":"], "m")
+        return myoui.search(pformatMac(self.bssid[:3],':'), "m")
 
     def addClients(self, client):
         """
@@ -133,7 +129,7 @@ class client:
         uses liboui2
         """
         myoui = liboui2.Oui('oui.txt')
-        return myoui.search(pformatMac(self.mac[:3])[":"], "m")
+        return myoui.search(pformatMac(self.mac[:3],":"), "m")
 
     def updateProbes(self, probe):
         """
