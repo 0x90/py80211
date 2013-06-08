@@ -138,7 +138,7 @@ class ChannelHop(threading.Thread):
         threading.Thread.__init__(self)
         threading.Thread.daemon = True
         self.iface = interface
-        self.pause = False
+        self.HOPpause = False
         # dwell for 3 time slices on 1 6 11
         # default is 3/10 of a second
         # got the lists from kismet config file
@@ -168,13 +168,13 @@ class ChannelHop(threading.Thread):
         """
         Pause the channel hopping
         """
-        self.pause = True
+        self.HOPpause = True
 
     def unpause(self):
         """
         Unpause the channel hopping
         """
-        self.pause = False
+        self.HOPpause = False
     
     def setchannel(self, channel):
         """
@@ -198,7 +198,7 @@ class ChannelHop(threading.Thread):
         """
         while True:
             # hopping is paused though loop still runs
-            if self.pause == True | self.lock == 1:
+            if self.HOPpause == True | self.lock == 1:
                 continue
             for ch in self.hopList:
                 try:
