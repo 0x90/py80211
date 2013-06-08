@@ -9,7 +9,7 @@ def pformatMac(hexbytes,delimiter):
     mac = []
     for byte in hexbytes:
         mac.append(byte.encode('hex'))
-    return delimiter.join(mac)
+    return delimiter.join(mac).upper()
 
 class ess:
     """
