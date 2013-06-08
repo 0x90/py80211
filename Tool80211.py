@@ -274,7 +274,7 @@ class Airview(threading.Thread):
         mac = []
         for byte in hexbytes:
             mac.append(byte.encode('hex'))
-        return ':'.join(mac)
+        return ':'.join(mac).upper()
 
     def processData(self, frame):
         """
