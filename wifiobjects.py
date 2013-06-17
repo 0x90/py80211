@@ -31,12 +31,12 @@ class accessPoint:
         self.lts = None             # last time object is seen, update on every acccess
         self.name = "accessPoint"   # object type
         self.connectedClients = []  # list of connected clients
-        self.essid = "Hidden?"      # broadcasted essid
+        self.essid = None           # broadcasted essid
         self.bssid = bssid          # bssid of ap
         self.hidden = False         # denote if essid is hidden
-        self.encryption = "Unknown" # show encryption level
-        self.auth = "Unknown"       # show authentication settings
-        self.cipher = "Unknown"     # cipher, either CCMP, TKIP, wep 64/128
+        self.encryption = None      # show encryption level
+        self.auth = None            # show authentication settings
+        self.cipher = None     # cipher, either CCMP, TKIP, wep 64/128
         self.channel = None         # ap's channel
         self.ssidList = []          # rolling list of seen ssid's for this ap
         self.oui = self.populateOUI() # lookup the object oui
@@ -116,7 +116,7 @@ class client:
         self.mac = mac                # client mac address
         self.probes = []              # list of probe requests client broadcast
         self.assoicated = False       # list if client is associated to an ap
-        self.bssid = "Not Assoicated" # Bssid of assoicated ap
+        self.bssid = None             # Bssid of assoicated ap
         self.wired = False            # not a wired client by default
         self.lastBssid = None         # last connected bssid
         self.managedFrame = False     # have we seen a managment frame from this client?
