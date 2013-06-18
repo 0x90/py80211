@@ -7,9 +7,12 @@ def pformatMac(hexbytes,delimiter):
     to the screen in the xx:xx:xx:xx:xx:xx format
     """
     mac = []
-    for byte in hexbytes:
-        mac.append(byte.encode('hex'))
-    return delimiter.join(mac).upper()
+    if hexbytes is not None:
+        for byte in hexbytes:
+            mac.append(byte.encode('hex'))
+        return delimiter.join(mac).upper()
+    else:
+        return hexbytes
 
 class ess:
     """
