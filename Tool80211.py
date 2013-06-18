@@ -330,6 +330,8 @@ class Airview(threading.Thread):
         client_obj = self.clientObjects[clientmac]
         client_obj.updateWired(wired)
         client_obj.assoicated = assoicated
+        #update last time seen
+        client_obj.lts = time.time()
         if assoicated is True:
             """
             may get client before we see ap, 
@@ -343,8 +345,8 @@ class Airview(threading.Thread):
             if client_obj.lastBssid != bssid:
                 if bssid in self.apObjects.keys():
                     self.apObjects[bssid].delClients(clientmac)
-        #update last time seen
-        client_obj.lts = time.time()
+        else:
+            client_obj.updateBssid("Not Assoicated")
         #update access points with connected clients
         # create ap objects based on bssids seen from clients
         # make sure we dont do broadcast addresses
@@ -421,6 +423,8 @@ class Airview(threading.Thread):
                     self.clientObjects[clientmac] = client(src)
                 client_obj = self.clientObjects[src]
                 client_obj.updateProbes(essid)
+                if client_obj.bssid is None:
+                    client_obj.updateBssid("Not Assoicated")
                 client_obj.managedFrame = True
                 client_obj.lts = time.time()
 
