@@ -272,9 +272,12 @@ class Airview(threading.Thread):
         to the screen in the xx:xx:xx:xx:xx:xx format
         """
         mac = []
-        for byte in hexbytes:
-            mac.append(byte.encode('hex'))
-        return ':'.join(mac).upper()
+        if hexbytes is not None:
+            for byte in hexbytes:
+                mac.append(byte.encode('hex'))
+            return ':'.join(mac).upper()
+        else:
+            return hexbytes
 
     def processData(self, frame):
         """
