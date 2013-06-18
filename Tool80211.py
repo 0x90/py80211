@@ -134,7 +134,6 @@ class ChannelHop(threading.Thread):
         set the channel hopping sequence
         expects lorcon injmon() context
         """
-        self.lock = 0
         threading.Thread.__init__(self)
         threading.Thread.daemon = True
         self.iface = interface
@@ -183,9 +182,6 @@ class ChannelHop(threading.Thread):
         returns -1 if channel isnt supported
         #should raise an exception if this is the case
         """
-        while self.lock == 1:
-            print "!!!!!!!!!!!!!!Waiting for lock...!!!!!!!!!!!!"
-            time.sleep(2)
         if channel in self.hopList:
             self.iface.set_channel(channel)
             return 0
@@ -198,8 +194,6 @@ class ChannelHop(threading.Thread):
         """
         while True:
             # hopping is paused though loop still runs
-            if self.HOPpause == True | self.lock == 1:
-                continue
             for ch in self.hopList:
                 try:
                     self.iface.set_channel(ch)
@@ -364,15 +358,9 @@ class Airview(threading.Thread):
         The airview state vars
         """
         while self.stop is False:
-            #TODO: we may need to set semaphore here?
-            self.hopper.lock = 1
             self.channel = self.hopper.current
             frame = self.rd.parseFrame(
                         self.rd.getFrame())
-            
-            # not sure if this is needed any more
-            self.hopper.lock = 0
-            #release semaphore here -- we have what we came for
             
             # beacon frames
             if frame == None:
