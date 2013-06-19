@@ -194,6 +194,8 @@ class ChannelHop(threading.Thread):
         """
         while True:
             # hopping is paused though loop still runs
+            if self.HOPpause is True:
+                continue
             for ch in self.hopList:
                 try:
                     self.iface.set_channel(ch)
