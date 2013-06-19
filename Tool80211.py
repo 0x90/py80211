@@ -396,8 +396,8 @@ class Airview(threading.Thread):
                     if bssid not in self.essObjects[essid].points:
                         self.essObjects[essid].points.append(bssid)
             
-            elif frame["type"] == 2 and frame["stype"] in range(0,16):
-                #applying to all data packets
+            elif frame["type"] == 2 and frame["stype"] in range(0, 17):
+                # applying to all data packets, subtype 0 - 16
                 self.processData(frame)
             
             elif frame["type"] == 0 and frame["stype"] in [4]:
