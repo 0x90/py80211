@@ -23,6 +23,8 @@ if __name__ == "__main__":
     parser = optparse.OptionParser("%prog options [-i]")
     parser.add_option("-i", "--interface", dest="card", nargs=1,
         help="Interface to sniff and inject from")
+    parser.add_option("-c", "--channel", dest="channel", nargs=1, default=False,
+        help="Interface to sniff and inject from")
     
     #check for correct number of arguments provided
     if len(sys.argv) < 3:
@@ -55,6 +57,9 @@ if __name__ == "__main__":
             """
             bss = airmonitor.apObjects 
             # print the current sniffing channel to the screen
+            if options.channel is not False:
+                airmonitor.hopper.pause()
+                print airmonitor.hopper.setchannel(int(options.channel))
             print "Channel %i" %(airmonitor.channel)
             # print out the access points and their essids
             print "Access point"
