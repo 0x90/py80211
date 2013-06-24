@@ -39,12 +39,12 @@ class accessPoint:
         self.hidden = False         # denote if essid is hidden
         self.encryption = None      # show encryption level
         self.auth = None            # show authentication settings
-        self.cipher = None     # cipher, either CCMP, TKIP, wep 64/128
+        self.cipher = None          # cipher, either CCMP, TKIP, wep 64/128
         self.channel = None         # ap's channel
         self.ssidList = []          # rolling list of seen ssid's for this ap
         self.oui = self.populateOUI() # lookup the object oui
-        self.rssi                   # current rssi
-        self.bcast = False           # used for airdrop, bcast kick packets are not allowed by default
+        self.rssi = None            # current rssi
+        self.bcast = False          # used for airdrop, bcast kick packets are not allowed by default
 
     def populateOUI(self):
         """
@@ -126,6 +126,7 @@ class client:
         self.lastBssid = None         # last connected bssid
         self.managedFrame = False     # have we seen a managment frame from this client?
         self.oui = self.populateOUI() # populate clients oui lookup
+        self.rssi = None              # client rssi
         self.apObject = None          # stores reference link to ap object when connected to bssid
 
     def populateOUI(self):
