@@ -289,6 +289,8 @@ class Airview(threading.Thread):
         clientmac = None
         # NOTE need to figure how to mark a client
         # no longer assoicated
+        clientrssi = None
+        aprssi = None
         if ds == 0:
             # broadcast/adhoc/managmentFrames
             assoicated = True
@@ -297,17 +299,20 @@ class Airview(threading.Thread):
                 assoicated = False
             wired = False
             clientmac = src
+            aprssi = frame["rssi"]
 
         elif ds == 1:
             # station to ap
             assoicated = True
             wired = False
             clientmac = src
-        
+            clientrssi = frame["rssi"]
+
         elif ds == 2:
             # ap to station
             clientmac = dst
             assoicated = True
+            aprssi = frame["rssi"]
             # check for wired broadcasts
             if self.rd.isBcast(dst) is True:
                 # were working with a wired broadcast
@@ -324,6 +329,8 @@ class Airview(threading.Thread):
         if clientmac not in self.clientObjects.keys(): 
             self.clientObjects[clientmac] = client(clientmac)
         client_obj = self.clientObjects[clientmac]
+        if clientrssi is not None:
+            client_obj.rssi = clientrssi
         client_obj.updateWired(wired)
         client_obj.assoicated = assoicated
         #update last time seen
@@ -353,6 +360,8 @@ class Airview(threading.Thread):
             # update list of clients connected to an AP
             ap_object = self.apObjects[bssid]
             ap_object.addClients(clientmac)
+            if aprssi is not None:
+                ap_object.rssi = aprssi
 
     def parse(self):
         """
@@ -382,6 +391,8 @@ class Airview(threading.Thread):
                     # create new object
                     self.apObjects[bssid] = accessPoint(bssid)
                 ap_object = self.apObjects[bssid]
+                # populate rssi
+                ap_object.rssi = frame["rssi"]
                 # update essid
                 ap_object.updateEssid(essid)
                 # update ap encryption
@@ -412,6 +423,7 @@ class Airview(threading.Thread):
                 if src not in self.clientObjects.keys(): 
                     self.clientObjects[clientmac] = client(src)
                 client_obj = self.clientObjects[src]
+                client_obj.rssi = frame['rssi']
                 client_obj.updateProbes(essid)
                 if client_obj.bssid is None:
                     client_obj.updateBssid("Not Assoicated")
@@ -423,9 +435,10 @@ class Airview(threading.Thread):
                 src = frame["src"]
                 dst = frame["dst"]
                 bssid = frame["bssid"]
-                for addy in [src, dst]: 
+                for addy in [src, dst]:
                     if addy in self.clientObjects.keys():
                         client_obj = self.clientObjects[addy]
+                        client_obj.rssi = frame["rssi"]
                         client_obj.assoicated = False
                         client_obj.updateBssid("Not Assoicated")
                         client_obj.managedFrame = True
