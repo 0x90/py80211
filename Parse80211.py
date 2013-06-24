@@ -489,7 +489,6 @@ class Parse80211:
 
         for i in range(len(unpacked)):
                 data[fields[i]] = unpacked[i]
-        pdb.set_trace()        
         return data
     
     def _unpack_preamble(self, buf):
