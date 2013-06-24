@@ -43,6 +43,7 @@ class accessPoint:
         self.channel = None         # ap's channel
         self.ssidList = []          # rolling list of seen ssid's for this ap
         self.oui = self.populateOUI() # lookup the object oui
+        self.rssi                   # current rssi
         self.bcast = False           # used for airdrop, bcast kick packets are not allowed by default
 
     def populateOUI(self):
