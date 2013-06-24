@@ -193,10 +193,10 @@ class ChannelHop(threading.Thread):
         Hop channels
         """
         while True:
-            # hopping is paused though loop still runs
-            if self.HOPpause is True:
-                continue
             for ch in self.hopList:
+                # hopping is paused though loop still runs
+                if self.HOPpause is True:
+                    continue
                 try:
                     self.iface.set_channel(ch)
                 except PyLorcon2.Lorcon2Exception:
