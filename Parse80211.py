@@ -1,3 +1,5 @@
+__author__ = "TheX1le, Crypt0s, radiotap parsing orginally by Scott Raynel in the radiotap.py project"
+
 import pcap
 import sys
 import struct
@@ -379,10 +381,134 @@ class Parse80211:
     
     def parseRtap(self, rtap):
         """
-        basic rtap parser to get signal dbm
+        radio tap parser taken from http://code.google.com/p/python-radiotap/source/browse/trunk/radiotap.py
+        orginal author, c) 2007 Scott Raynel <scottraynel@gmail.com>
+        Minor changes by TheX1le
         """
-        if len(rtap) == 18:
-            pass
+        # All Radiotap fields are in little-endian byte-order.
+        # We use our own alignment rules, hence '<'.
+        data = {}
+        fields = []
+        rformat = "<"
+        RTAP_TSFT = 0
+        RTAP_FLAGS = 1
+        RTAP_RATE = 2
+        RTAP_CHANNEL = 3
+        RTAP_FHSS = 4
+        RTAP_DBM_ANTSIGNAL = 5
+        RTAP_DBM_ANTNOISE = 6
+        RTAP_LOCK_QUALITY = 7
+        RTAP_TX_ATTENUATION = 8
+        RTAP_DB_TX_ATTENUATION = 9
+        RTAP_DBM_TX_POWER = 10
+        RTAP_ANTENNA = 11
+        RTAP_DB_ANTSIGNAL = 12
+        RTAP_DB_ANTNOISE = 13
+        RTAP_RX_FLAGS = 14
+        RTAP_TX_FLAGS = 15
+        RTAP_RTS_RETRIES = 16
+        RTAP_DATA_RETRIES = 17
+        RTAP_EXT = 31 # Denotes extended "present" fields.
+        
+        self._PREAMBLE_FORMAT = "<BxHI"
+        self._PREAMBLE_SIZE = struct.calcsize(self._PREAMBLE_FORMAT)
+        (v,l,p) = self._unpack_preamble(rtap)
+        # Skip extended bitmasks
+        pp = p
+        skip = 0
+        while pp & 1 << RTAP_EXT:
+                pp = buf[self._PREAMBLE_SIZE + skip]
+                skip += 1
+        
+        # Generate a rformat string to be passed to unpack
+        # To do this, we look at each of the radiotap fields
+        # we know about in order. We have to make sure that
+        # we keep all fields aligned to the field's natural
+        # boundary. E.g. 16 bit fields must be on a 16-bit boundary.
+
+        if p & 1 << RTAP_TSFT:
+                rformat += "Q"
+                fields.append(RTAP_TSFT)
+        if p & 1 << RTAP_FLAGS:
+                rformat += "B"
+                fields.append(RTAP_FLAGS)
+        if p & 1 << RTAP_RATE:
+                rformat += "B"
+                fields.append(RTAP_RATE)
+        if p & 1 << RTAP_CHANNEL:
+                # Align to 16 bit boundary:
+                rformat += self._field_align(2, rformat)
+                rformat += "I"
+                fields.append(RTAP_CHANNEL)
+        if p & 1 << RTAP_FHSS:
+                rformat += "H"
+                fields.append(RTAP_FHSS)
+        if p & 1 << RTAP_DBM_ANTSIGNAL:
+                rformat += "b"
+                fields.append(RTAP_DBM_ANTSIGNAL)
+        if p & 1 << RTAP_DBM_ANTNOISE:
+                rformat += "b"
+                fields.append(RTAP_DBM_ANTNOISE)
+        if p & 1 << RTAP_LOCK_QUALITY:
+                rformat += self._field_align(2, rformat)
+                rformat += "H"
+                fields.append(RTAP_LOCK_QUALITY)
+        if p & 1 << RTAP_TX_ATTENUATION:
+                rformat += self._field_align(2, rformat)
+                rformat += "H"
+                fields.append(RTAP_TX_ATTENUATION)
+        if p & 1 << RTAP_DBM_TX_POWER:
+                rformat += "b"
+                fields.append(RTAP_DBM_TX_POWER)
+        if p & 1 << RTAP_ANTENNA:
+                rformat += "B"
+                fields.append(RTAP_ANTENNA)
+        if p & 1 << RTAP_DB_ANTSIGNAL:
+                rformat += "B"
+                fields.append(RTAP_DB_ANTSIGNAL)
+        if p & 1 << RTAP_DB_ANTNOISE:
+                rformat += "B"
+                fields.append(RTAP_DB_ANTNOISE)
+        if p & 1 << RTAP_RX_FLAGS:
+                rformat += self._field_align(2, rformat)
+                rformat += "H"
+                fields.append(RTAP_RX_FLAGS)
+        if p & 1 << RTAP_TX_FLAGS:
+                rformat += self._field_align(2, rformat)
+                rformat += "H"
+                fields.append(RTAP_TX_FLAGS)
+        if p & 1 << RTAP_RTS_RETRIES:
+                rformat += "B"
+                fields.append(RTAP_RTS_RETRIES)
+        if p & 1 << RTAP_DATA_RETRIES:
+                rformat += "B"
+                fields.append(RTAP_DATA_RETRIES)
+
+        end = self._PREAMBLE_SIZE + skip + struct.calcsize(rformat)
+        unpacked = struct.unpack(rformat, rtap[self._PREAMBLE_SIZE + skip:end])
+
+        for i in range(len(unpacked)):
+                data[fields[i]] = unpacked[i]
+        pdb.set_trace()        
+        return data
+    
+    def _unpack_preamble(self, buf):
+        if len(buf) < self._PREAMBLE_SIZE:
+                raise Exception("Truncated at Radiotap preamble.")
+        (v,l,p) = struct.unpack(self._PREAMBLE_FORMAT, buf[:self._PREAMBLE_SIZE])
+        if v != 0:
+                raise Exception("Radiotap version not handled")
+        return (v,l,p)
+
+    def _field_align(self, fbytes, string):
+        """ Returns a number of 'x' characters to ensure that
+            the next character fits on a 'bytes' boundary.
+        """
+        n = struct.calcsize(string) % fbytes
+        if n == 0:
+                return ""
+        return 'x' * (fbytes - n)
+
     def parseFrame(self, frame):
         """
         Determine the type of frame and
@@ -404,9 +530,9 @@ class Parse80211:
                 self.rt = 0
         else:
             return None
+        # parse radio tap if not 0
+        rtapData = self.parseRtap(data[:self.rt])
         # determine frame subtype
-        # subtype byte should be one off radio tap headers
-        #subtype = data[self.rt:self.rt +1]
         ptype = ord(data[self.rt])
         # wipe out all bits we dont need
         ftype = (ptype >> 2) & 3
@@ -429,6 +555,8 @@ class Parse80211:
                     parsedFrame["wepbit"] = self.wepbit
                     # strip the headers
                     parsedFrame['rtap'] = self.rt
+                    # get the rssi from rtap data
+                    parsedFrame['rssi'] = rtapData[5]
                     parsedFrame["raw"] = data
                 return parsedFrame
             else:
