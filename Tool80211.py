@@ -87,11 +87,15 @@ class iface80211:
         """
         return self.lp.next()
 
-    def writeTun(self, packet):
+    def writeTun(self, frame):
         """
         write a packet to tun interface
         """
-        os.write(self.tun, packet)
+        # Add Tun/Tap header to frame, convert to string and send. 
+        # "\x00\x00\x00\x00" is a requirement when writing to tap 
+        # interfaces. It is an identifier for the Kernel.
+        eth_sent_frame = "\x00\x00\x00\x00" + str(frame)     
+        os.write(self.tun, eth_sent_frame)
 
     def openMon(self, interface):
         """
@@ -248,6 +252,8 @@ class Airview(threading.Thread):
         self.ctx = monif["ctx"]
         # open up a parser
         self.rd = Parse80211.Parse80211(self.iface)
+        # start the hopper
+        self.hopper = ChannelHop(self.ctx)
         
         #### New code ####
         # dict object to store client objects in 
@@ -450,8 +456,6 @@ class Airview(threading.Thread):
         """
         start the parser
         """
-        # need to start channel hopping here
-        self.hopper = ChannelHop(self.ctx)
         self.hopper.start()
         self.parse()
     
