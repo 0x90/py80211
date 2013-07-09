@@ -559,8 +559,8 @@ class Parse80211:
                     parsedFrame['rtap'] = self.rt
                     # get the rssi from rtap data
                     if rtapData == -1:
-                        # truncated rtap, make rssi -99
-                        parsedFrame['rssi'] = -99
+                        # truncated rtap, make rssi None
+                        parsedFrame['rssi'] = None
                     else:
                         parsedFrame['rssi'] = rtapData[5]
                     parsedFrame["raw"] = data
