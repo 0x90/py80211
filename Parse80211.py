@@ -530,7 +530,11 @@ class Parse80211:
         else:
             return None
         # parse radio tap if not 0
-        rtapData = self.parseRtap(data[:self.rt])
+        try:
+            rtapData = self.parseRtap(data[:self.rt])
+        except Exception:
+            # bad rtap header, pass for now
+            pass
         # determine frame subtype
         ptype = ord(data[self.rt])
         # wipe out all bits we dont need
