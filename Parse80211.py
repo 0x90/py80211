@@ -412,7 +412,10 @@ class Parse80211:
         
         self._PREAMBLE_FORMAT = "<BxHI"
         self._PREAMBLE_SIZE = struct.calcsize(self._PREAMBLE_FORMAT)
-        (v,l,p) = self._unpack_preamble(rtap)
+        try:
+            (v,l,p) = self._unpack_preamble(rtap)
+        except Exception:
+            return -1
         # Skip extended bitmasks
         pp = p
         skip = 0
@@ -559,7 +562,11 @@ class Parse80211:
                     # strip the headers
                     parsedFrame['rtap'] = self.rt
                     # get the rssi from rtap data
-                    parsedFrame['rssi'] = rtapData[5]
+                    if rtapData == -1:
+                        # truncated rtap, make rssi None
+                        parsedFrame['rssi'] = None
+                    else:
+                        parsedFrame['rssi'] = rtapData[5]
                     parsedFrame["raw"] = data
                 return parsedFrame
             else:

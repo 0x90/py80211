@@ -104,7 +104,8 @@ class Oui:
             "/var/lib/misc/oui.txt",
             "/etc/manuf/oui.txt",
             "/usr/share/wireshark/wireshark/manuf/oui.txt",
-            "/usr/share/wireshark/manuf/oui.txt"]
+            "/usr/share/wireshark/manuf/oui.txt",
+            "/etc/oui.txt"]
         # append any oui paths provided by program using lib to list
         if filename != None:
             self.OUI_PATH.append(filename)
@@ -113,7 +114,7 @@ class Oui:
                 OUI_FILE = PATH
         if OUI_FILE == None:
             # default option
-            aircrackOUI=self.OUI_PATH[1]
+            OUI_FILE = "/etc/oui.txt"
         
         self.filename = OUI_FILE
         # may cause an issue with parsed files in other directories
