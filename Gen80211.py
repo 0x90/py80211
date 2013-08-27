@@ -89,13 +89,13 @@ class packetGenerator:
         """
         return self.authPacketEngine(allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType)
     
-    def authPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ["auth","assos"]):
+    def authPacketEngine(self, allow_bcast, source_addr, destination_addr, bss_id_addr, channel, frameType = ["auth","assos"]):
         """
         Build each packet based on options
         Options are packets with broadcast address or no broadcast addresses
         allow_bcast is a boolen var on if bcast addresses are allowed to be used
-        destination_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
         source_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
+        destination_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
         bss_id_addr is expecing the bssid mac addy in format of "xx:xx:xx:xx:xx:xx"`
         channel is expected as int, no check is done if its a valid 802.11 channel
         """
