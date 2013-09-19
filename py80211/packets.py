@@ -11,6 +11,8 @@ class Generator(object):
         """
             Intialize packet hex values
         """
+        # seed the random number generator with system time
+        random.seed()
         # packet headers are in little endian
         self.packetTypes = {
                 "deauth": [0,12],  # deauthentication packet header
@@ -18,7 +20,7 @@ class Generator(object):
                 "auth":   [0,11],  # authentication packet header
                 "assos":  [0,0],   # association packet header
                 "data":   [2,0],   # data packet header
-                "reass":  [0,3]    # reassoication packet header
+                "reass":  [0,2]    # reassoication packet header
                 }
         # the oldbcast address may not always work
         # note this also contains some multi cast addresses
@@ -31,7 +33,7 @@ class Generator(object):
                 "cstp": '\x01\x00\x0C\xCC\xCC\xCD',   # Cisco shared STP Address
                 "stpp": '\x01\x80\xc2\x00\x00\x08',   # Spanning Tree multicast 802.1AD
                 "oam": '\x01\x80\xC2\x00\x00\x02',    # oam protocol 802.3ah
-                "ipv4m": '\x01\x00\x5e\x00\x00\xCD',  # ipv4 multicast
+                "ipv4m": '\x01\x00\x5e\x7F\x00\xCD',  # ipv4 multicast
                 "ota" : '\x01\x0b\x85\x00\x00\x00'    # Over the air provisioning multicast
                 }
         self.deauthPacketReason = [
@@ -52,6 +54,33 @@ class Generator(object):
             "empty": self.bit2hex('0000000000000000'), # unset all bits
             }
 
+    def wdsPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel):
+        """
+        Generate a wds packet to the AP
+        """
+        packets = []
+        channel = int(channel)
+        if allow_bcast == True:
+            for bcast in self.packetBcast:
+                    packets.append([self.wdsBuildPacket(
+                        self.packetTypes['data'],  # packet type
+                        destination_addr,         # destinaion
+                        self.packetBcast[bcast],  # source
+                        bss_id_addr,              # bssid
+                        ),
+                        channel, source_addr])
+
+        if allow_bcast == False:
+            packets.append([
+                self.wdsBuildPacket(
+                    self.packetTypes['data'],  # packet type
+                    destination_addr,         # destinaion
+                    source_addr,              # source
+                    bss_id_addr,              # bssid
+                    ),
+                    channel, source_addr])
+        return packets
+
     def reassPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ['reass']):
         """
         Generate a reassoication packet
@@ -59,14 +88,17 @@ class Generator(object):
         return self.authPacketEngine(allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ['reass'])
 
     def authPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ["auth","assos"]):
+        return self.authPacketEngine(allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType)
+
+    def authPacketEngine(self, allow_bcast, source_addr, destination_addr, bss_id_addr, channel, frameType = ["auth","assos"]):
         """
-        Build each packet based on options
-        Options are packets with broadcast address or no broadcast addresses
-        allow_bcast is a boolen var on if bcast addresses are allowed to be used
-        destination_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
-        source_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
-        bss_id_addr is expecing the bssid mac addy in format of "xx:xx:xx:xx:xx:xx"`
-        channel is expected as int, no check is done if its a valid 802.11 channel
+            Build each packet based on options
+            Options are packets with broadcast address or no broadcast addresses
+            allow_bcast is a boolen var on if bcast addresses are allowed to be used
+            source_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
+            destination_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
+            bss_id_addr is expecing the bssid mac addy in format of "xx:xx:xx:xx:xx:xx"`
+            channel is expected as int, no check is done if its a valid 802.11 channel
         """
         packets = []
         channel = int(channel)
@@ -101,6 +133,7 @@ class Generator(object):
                         destination_addr,         # destinaion
                         source_addr,              # source
                         bss_id_addr,              # bssid
+                        ptype                     # expected packet type
                         ),
                         channel, source_addr])
         return packets
@@ -128,24 +161,22 @@ class Generator(object):
 
     def deauthPacketEngine(self, allow_bcast, destination_addr, source_addr, bss_id_addr, channel, frameType = ['deauth','disass']):
         """
-        Build each packet based on options
-        Options are packets with broadcast address
-        or no broadcast addresses
-        allow_bcast is a boolen var on if bcast addresses are allowed to be used
-        destination_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
-        source_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
-        bss_id_addr is expecing the bssid mac addy in format of "xx:xx:xx:xx:xx:xx"
-        channel is expected as int, no check is done if its a valid 802.11 channel
-        a list of frames types to send, these can be overloaded
+            Build each packet based on options
+            Options are packets with broadcast address
+            or no broadcast addresses
+            allow_bcast is a boolen var on if bcast addresses are allowed to be used
+            destination_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
+            source_addr is expecting a string mac addy in format of "xx:xx:xx:xx:xx:xx"
+            bss_id_addr is expecting the bssid mac addy in format of "xx:xx:xx:xx:xx:xx"
+            channel is expected as int, no check is done if its a valid 802.11 channel
+            a list of frames types to send, these can be overloaded
         """
         packets = []
-        destination_addr = destination_addr
-        source_addr = source_addr
-        bss_id_addr = bss_id_addr
         channel = int(channel)
         if allow_bcast == False:
             # broadcast packets will not be sent
-            for btype in frameType:  # tx two packets with random reasons one two and one from
+            # tx two packets with random reasons one two and one from
+            for btype in frameType:
                 packets.append([
                     self.deauthBuildPacket(
                         self.packetTypes[btype],  # packet type
@@ -182,9 +213,9 @@ class Generator(object):
                 packets.append([
                     self.deauthBuildPacket(
                         self.packetTypes[btype],
-                        self.source_addr,
-                        self.destination_addr,
-                        self.bss_id_addr,
+                        source_addr,
+                        destination_addr,
+                        bss_id_addr,
                         self.randomDictObj(self.deauthPacketReason)
                         ),
                     channel])
@@ -209,45 +240,72 @@ class Generator(object):
                             ),channel])
         return packets
 
+    def authBuildPacket(self, bptype, dstAddr, srcAddr, bssid, ptype):
+        """
+        Constructs the packets to be sent
+        ptype = expected packet type
+        """
+        # packetParts positions are as follows
+        # 0:bptype 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
+        packet = [self.genPtype(bptype)] # packet subtype & flags
+        packet.append('\x00\x00')        # duration
+        packet.append(dstAddr)       # destain_addr
+        packet.append(srcAddr)       # source_addr
+        packet.append(bssid)         # bss_id_addr
+        packet.append('\x90\x00')    # seq number set to 9
+        if ptype in ['assos', 'reass']:         # assoication packet type we need to change a few bits
+            # known bug here, where the ssid, and supported rates are needed
+            packet.append(self.randomDictObj(self.capabilities)) # capabilities field
+            packet.append('\x01\x00')   # listen interval
+            packet.append('\x00\x00')   # set broadcast bssid
+        else:
+            packet.append('\x00\x00\x01\x00\x00\x00')  # set to open system auth
+        return "".join(packet)
+
     def deauthBuildPacket(self, btype ,dstAddr, srcAddr, bssid, reasonCode):
         """
         Constructs the deauth/disassoicate packets to be sent
         """
         # packetParts positions are as follows
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = self.genPtype(btype)  # subtype & flags
+        packet = [self.genPtype(btype)]  # subtype & flags
         packet.append('\x00\x00')        # duration
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
-        packet.append('\x70\x6a')    # seq number
+        packet.append('\x90\x00')    # seq number #set to 9
         packet.append(reasonCode)    # reason code
         return "".join(packet)
 
-    def wdsBuildPacket(self, btype ,dstAddr, srcAddr, bssid, reasonCode):
+    def wdsBuildPacket(self, btype ,dstAddr, srcAddr, bssid):
         """
         Contructs the WDS 4 address packet to be sent
         """
         # packetParts positions are as follows
         # 0:type 1:destination_addr 2:source_addr 3:bss_id_addr 4:reason
-        packet = self.genPtype(btype) # subtype & flags
+        if dstAddr == bssid:
+            dsDir = True
+        else:
+            dsDir = False
+        packet = [self.genPtype(btype)] # subtype & flags
         packet.append('\x00\x00')    # duration
         packet.append(dstAddr)       # destain_addr
         packet.append(srcAddr)       # source_addr
         packet.append(bssid)         # bss_id_addr
-        packet.append('\x70\x6a')    # seq number
+        packet.append('\x90\x00')    # seq number , set to 9
         packet.append(srcAddr)       # wds src addr
         return "".join(packet)
 
     def randomDictObj(self, dictObject):
         """
-        provide a random object value from a given dictionary
+        provide a random object value from a given dictionary or list
         dictObject = Dictionary object to pull random values from
         """
-        dictObjectList = dictObject.values()
-        return dictObjectList[
-            random.randrange(0,
-                len(dictObjectList, 1))]
+        if type(dictObject) is not list:
+            dictObjectList = dictObject.values()
+        else:
+            dictObjectList = dictObject
+        return random.choice(dictObjectList)
 
     def randomMac(self):
         """
@@ -291,7 +349,7 @@ class Generator(object):
         sbit = int(bits[8:16], 2)
         return chr(fbit) + chr(sbit)
 
-    def genPtype(self, ptype, fromds = False):
+    def genPtype(self, ptype, fromds = "adhoc"):
         """
         generate a framecontrol in little endian
         ptype is list [type,subtype] as int
@@ -303,12 +361,17 @@ class Generator(object):
         pbyte = 0 | int(ptype[0]) << 2
         # set the subtype
         pbyte = pbyte | int(ptype[1]) << 4
-        if fromds is True:
+        if fromds == "client":
+            # from client to ap
             flags = '\x02'
-        else:
+        elif fromds == "ap":
+            # from ap to client
             flags = '\x01'
-        return pbyte + flags
+        elif fromds == "adhoc":
+            # managment frame or adhoc
+            flags = '\x00'
 
+        return chr(pbyte) + flags
 
 if __name__ == "__main__":
   for bits in Generator().capabilities:
