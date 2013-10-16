@@ -10,6 +10,7 @@ import pcap
 import Parse80211
 import PyLorcon2
 from wifiobjects import *
+from arpTable import *
 
 #debug imports
 import pdb
@@ -72,7 +73,6 @@ class iface80211:
         if self.moniface is not None:
             self.moniface['ctx'].send_bytes(packet)
 
-    
     def readTun(self):
         """
         read a packet from tun interface
@@ -81,12 +81,22 @@ class iface80211:
         if self.tun in packet:
             return os.read(self.tun, 1526)
     
-    def sniffTun(self):
+    def sniffTun(self, ARP=False):
         """
-        read a packet from tun interface
+        read a packet from tun interface using pylibpcap
         """
-        return self.lp.next()
-
+        frame = self.lp.next()
+        # add in arp logic here
+        if ARP == True:
+            # ARP processing is true, we are to respond to all arp packets
+            if frame[12:13] == "\x80\x06":
+                # we got an arp packet
+                rmac = frame[22:27]
+                rip = frame[28:31]
+                uip = frame[38:]
+                print "we got an arp packet"
+        return frame
+    
     def writeTun(self, frame):
         """
         write a packet to tun interface
