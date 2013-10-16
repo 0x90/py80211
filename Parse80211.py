@@ -511,7 +511,7 @@ class Parse80211:
                 return ""
         return 'x' * (fbytes - n)
 
-    def parseFrame(self, frame):
+    def parseFrame(self, frame, ARP):
         """
         Determine the type of frame and
         choose the right parser
@@ -568,6 +568,11 @@ class Parse80211:
                     else:
                         parsedFrame['rssi'] = rtapData[5]
                     parsedFrame["raw"] = data
+                if ARP is True:
+                    if stype == '\x08':
+                        # data packet, check for arp
+                        pass
+                        
                 return parsedFrame
             else:
                 # we dont have a parser for the packet
