@@ -95,6 +95,9 @@ class iface80211:
                 rip = frame[28:31]
                 uip = frame[38:]
                 print "we got an arp packet"
+                """
+                Needs to look into the arpTable class, find the right object based on the requested IP, and if so, craft a response back, and write it back the tun
+                """
         return frame
     
     def writeTun(self, frame):
