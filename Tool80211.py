@@ -20,6 +20,84 @@ class iface80211:
     """
     handle 80211 interfacs
     """
+    
+    def inject(self, packet):
+        """
+        send bytes to pylorcon interface
+        """
+        if self.moniface is not None:
+            self.moniface['ctx'].send_bytes(packet)
+
+    def openMon(self, interface):
+        """
+        open a monitor mode interface and create a vap
+        interface = string 
+        currently assumes all cards are to be opened in monitor mode
+        """
+        # open the card up and gain a a context to them
+        # create a dict with interface name and context
+        try:
+            self.moniface = {"ctx":PyLorcon2.Context(interface)}
+        except PyLorcon2.Lorcon2Exception,e:
+            print "%s is the %s interface there?" %(e, interface)
+            sys.exit(-1)
+        # place cards in injection/monitor mode
+        self.moniface["ctx"].open_injmon()
+        self.moniface["name"] = self.moniface["ctx"].get_vap()
+        #self.air = self.Airview(self.moniface)
+        #self.air.start()
+
+    def getMonmode(self):
+        """
+        retruns mon interface object
+        """
+        return self.moniface
+
+    def exit(self):
+        """
+        Close card context
+        """
+        self.moniface["ctx"].close()
+
+    def openLiveSniff(self, dev):
+        """
+        open up a libpcap object
+        def = mon mode interface as string aka wlan0
+        return object and radio tap boolen
+        """
+        packet = None
+        try:
+            self.lp = pcap.pcapObject()
+        except AttributeError:
+            print "You have the wrong pypcap installed"
+            print "Use https://github.com/signed0/pylibpcap.git"
+        # check what these numbers mean
+        self.lp.open_live(dev, 1600, 0 ,100)
+        if self.lp.datalink() == 127:
+            rth = True
+            # snag a packet to look at header, this should always be a
+            # packet that wasnt injected so should have a rt header
+            while packet is None:
+                frame = self.getFrame()
+                if frame is not None:
+                    packet = frame[1]
+            # set known header size
+            headsize = struct.unpack('h', packet[2:4])[0]
+        else:
+            rth = False
+        return (rth, headsize)
+
+    def getFrame(self):
+        """
+        return a frame from libpcap
+        """
+        return self.lp.next()
+
+
+class ifaceTunnel:
+    """
+    create and use tun devices
+    """
     def __init__(self):
         self.TUNSETIFF = 0x400454ca
         self.TUNSETOWNER = self.TUNSETIFF + 2
@@ -65,14 +143,7 @@ class iface80211:
             return ifname
         else:
             return False
-    
-    def inject(self, packet):
-        """
-        send bytes to pylorcon interface
-        """
-        if self.moniface is not None:
-            self.moniface['ctx'].send_bytes(packet)
-
+   
     def readTun(self):
         """
         read a packet from tun interface
@@ -98,36 +169,6 @@ class iface80211:
         eth_sent_frame = "\x00\x00\x00\x00" + str(frame)     
         os.write(self.tun, eth_sent_frame)
 
-    def openMon(self, interface):
-        """
-        open a monitor mode interface and create a vap
-        interface = string 
-        currently assumes all cards are to be opened in monitor mode
-        """
-        # open the card up and gain a a context to them
-        # create a dict with interface name and context
-        try:
-            self.moniface = {"ctx":PyLorcon2.Context(interface)}
-        except PyLorcon2.Lorcon2Exception,e:
-            print "%s is the %s interface there?" %(e, interface)
-            sys.exit(-1)
-        # place cards in injection/monitor mode
-        self.moniface["ctx"].open_injmon()
-        self.moniface["name"] = self.moniface["ctx"].get_vap()
-        #self.air = self.Airview(self.moniface)
-        #self.air.start()
-
-    def getMonmode(self):
-        """
-        retruns mon interface object
-        """
-        return self.moniface
-
-    def exit(self):
-        """
-        Close card context
-        """
-        self.moniface["ctx"].close()
 
 class ChannelHop(threading.Thread):
     """
@@ -252,7 +293,9 @@ class Airview(threading.Thread):
         # get context for dealing with channel hopper
         self.ctx = monif["ctx"]
         # open up a parser
-        self.rd = Parse80211.Parse80211(self.iface)
+        rtapHeader = self.intf.openLiveSniff(self.iface)
+        # pass in rtap boolean, and real header size, as deved by live sniff
+        self.rd = Parse80211.Parse80211(rtapHeader[0], rtapHeader[1])
         # start the hopper
         self.hopper = ChannelHop(self.ctx)
         
@@ -378,7 +421,7 @@ class Airview(threading.Thread):
         while self.stop is False:
             self.channel = self.hopper.current
             frame = self.rd.parseFrame(
-                        self.rd.getFrame())
+                        self.intf.getFrame())
             
             # beacon frames
             if frame == None:
