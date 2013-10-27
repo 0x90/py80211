@@ -784,3 +784,12 @@ class Parse80211:
         return {"bssid":bssid, "essid":essid, "src":src, "dst":dst, 
             "channel":channel, "extended":self.IE.tagdata, "ds":dsbits,
             "encryption":encryption, "auth":authkey, "cipher":cipher}
+
+if __name__ == "__main__":
+    x = Parse80211(sys.argv[1])
+    while True:
+        frame = x.parseFrame(x.getFrame())
+        #if frame != None:
+        #    if frame["key"] == "\x20":
+        #        print frame
+        print x.parseFrame(x.getFrame())
