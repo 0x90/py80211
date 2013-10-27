@@ -511,7 +511,7 @@ class Parse80211:
                 return ""
         return 'x' * (fbytes - n)
 
-    def parseFrame(self, frame, ARP):
+    def parseFrame(self, frame, ARP=False):
         """
         Determine the type of frame and
         choose the right parser
