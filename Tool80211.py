@@ -86,18 +86,6 @@ class iface80211:
         read a packet from tun interface using pylibpcap
         """
         frame = self.lp.next()
-        # add in arp logic here
-        if ARP == True:
-            # ARP processing is true, we are to respond to all arp packets
-            if frame[12:13] == "\x80\x06":
-                # we got an arp packet
-                rmac = frame[22:27]
-                rip = frame[28:31]
-                uip = frame[38:]
-                print "we got an arp packet"
-                """
-                Needs to look into the arpTable class, find the right object based on the requested IP, and if so, craft a response back, and write it back the tun
-                """
         return frame
     
     def writeTun(self, frame):
