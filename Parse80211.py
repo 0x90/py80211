@@ -1,6 +1,5 @@
 __author__ = "TheX1le, Crypt0s, radiotap parsing orginally by Scott Raynel in the radiotap.py project"
 
-import pcap
 import sys
 import struct
 import pdb
