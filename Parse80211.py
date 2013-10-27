@@ -272,12 +272,14 @@ class Parse80211:
     Class file for parsing
     several common 802.11 frames
     """
-    def __init__(self, dev):
+    def __init__(self, rth, headsize):
         """
-        open up the libpcap interface
-        open up the device to sniff from
-        dev = device name as a string
+        start the parser
+        rth = Boolean if there is Radio tap header
+        headersize = actual header size
         """
+        self.rth = rth
+        self.headsize = headsize
         # this gets set to True if were seeing mangled packets
         self.mangled = False
         # number of mangled packets seen
@@ -327,34 +329,6 @@ class Parse80211:
             "ota" : '\x01\x0b\x85\x00\x00\x00',    # Over the air provisioning multicast
             "v6Neigh" : '\x33\x33\xff\x00\x00\x00' # ipv6 neighborhood discovery
         }
-        self.openLiveSniff(dev)
-
-    def openLiveSniff(self, dev):
-        """
-        open up a libpcap object
-        return object and radio tap boolen
-        """
-        packet = None
-        try:
-            self.lp = pcap.pcapObject()
-        except AttributeError:
-            print "You have the wrong pypcap installed"
-            print "Use https://github.com/signed0/pylibpcap.git"
-        # check what these numbers mean
-        self.lp.open_live(dev, 1600, 0 ,100)
-        if self.lp.datalink() == 127:
-            self.rth = True
-            # snag a packet to look at header, this should always be a
-            # packet that wasnt injected so should have a rt header
-            while packet is None:
-                frame = self.getFrame()
-                if frame is not None:
-                    packet = frame[1]
-            # set known header size
-            self.headsize = struct.unpack('h', packet[2:4])[0]
-        else:
-            self.rth = False
-        return
         
     def isBcast(self, mac):
         """
@@ -373,12 +347,6 @@ class Parse80211:
         #print data[self.rt].encode('hex')
         #print "No parser for subtype\n"
 
-    def getFrame(self):
-        """
-        return a frame from libpcap
-        """
-        return self.lp.next()
-    
     def parseRtap(self, rtap):
         """
         radio tap parser taken from http://code.google.com/p/python-radiotap/source/browse/trunk/radiotap.py
