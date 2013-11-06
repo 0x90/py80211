@@ -10,7 +10,7 @@ import pcap
 import Parse80211
 import PyLorcon2
 from wifiobjects import *
-from arpTable import *
+#from arpTable import *
 
 #debug imports
 import pdb
