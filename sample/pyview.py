@@ -72,8 +72,10 @@ if __name__ == "__main__":
                 cipher = bss[bssid].cipher
                 oui = bss[bssid].oui
                 rssi = bss[bssid].rssi
-                print ("%s %s %s %s %s %s %s %s" %(apbssid, essid, enc, cipher, auth, channel, oui, rssi)).encode("utf-8")
-
+                band = bss[bssid].getband()
+                rates = bss[bssid].rates
+                print ("%s %s %s %s %s %s %s %s %s %s" %(apbssid, essid, enc, cipher, auth, channel, oui, rssi, band, rates)).encode("utf-8")
+            
             """
             Print out the clients and anything they are assoicated to
             as well as probes to the screen
