@@ -451,6 +451,15 @@ class Airview(threading.Thread):
                 ap_object.cipher = frame["cipher"]
                 # update channel
                 ap_object.channel = frame["channel"]
+                # rates
+                try:
+                    ap_object.updaterates(frame["extended"]["exrates"])
+                except KeyError:
+                    pass
+                try:
+                    ap_object.updaterates(frame["extended"]["rates"])
+                except KeyError:
+                    pass
                 # update ap_last time seen
                 ap_object.lts = time.time()
                 # update the ess
