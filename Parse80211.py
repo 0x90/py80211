@@ -155,7 +155,7 @@ class IeTag80211:
         """
         exrates = []
         for exrate in tuple(rbytes[2:]):
-            exrates.append(ord(exrate))
+            exrates.append(ord(exrate)/2)
         self.tagdata["exrates"] = exrates
 
     def channel(self, rbytes):
@@ -184,7 +184,7 @@ class IeTag80211:
         """
         rates = []
         for rate in tuple(rbytes[2:]):
-            rates.append(ord(rate))
+            rates.append(ord(rate)/2)
         self.tagdata["rates"] = rates
 
     def rsn(self, rbytes):
