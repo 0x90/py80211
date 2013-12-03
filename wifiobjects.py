@@ -47,7 +47,7 @@ class accessPoint:
         self.rates = []             # list of supported rates
         self.band = []              # list of bands, a, ab, abg, ac, n
         self.fiveghzChannels = (36, 38,
-            40, 42, 44, 46, 58, 52, 56,
+            40, 42, 44, 46, 52, 56,
             58, 60, 100, 104, 108, 112,
             116, 120, 124, 128, 132, 136,
             140, 149, 153, 157, 161, 165) # 5ghz channel list
