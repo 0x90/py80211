@@ -44,7 +44,52 @@ class accessPoint:
         self.ssidList = []          # rolling list of seen ssid's for this ap
         self.oui = self.populateOUI() # lookup the object oui
         self.rssi = None            # current rssi
+        self.rates = []             # list of supported rates
+        self.band = []              # list of bands, a, ab, abg, ac, n
+        self.fiveghzChannels = (36, 38,
+            40, 42, 44, 46, 58, 52, 56,
+            58, 60, 100, 104, 108, 112,
+            116, 120, 124, 128, 132, 136,
+            140, 149, 153, 157, 161, 165) # 5ghz channel list
+        self.twofourghzChannels = range(1, 15) # 2.4ghz channel list
         self.bcast = False          # used for airdrop, bcast kick packets are not allowed by default
+
+    
+    def updaterates(self, rates):
+        """
+        add rates / extended rates
+        """
+        if type(rates) is list:
+            for rate in rates:
+                self.rates.append(int(rate))
+        else:
+            self.rates.append(int(rates))
+        # sort rates so they are in order
+        # ulgy hack to ensure uniqueness
+        runique = {}
+        for i in self.rates:
+            runique[i] = ""
+        self.rates = runique.keys()
+        self.rates.sort()
+
+    def getband(self):
+        """
+        return if its an ABGN AC network
+        """
+        band = []
+        if len(self.rates) == 0:
+            return "Unknown"
+        if 11 in self.rates:
+            band.append('B')
+        if 54 in self.rates and self.channel in self.fiveghzChannels:
+            band.append('A')
+        elif 54 in self.rates and self.channel in self.twofourghzChannels:
+            band.append('G')
+        if 150 in self.rates:
+            band.append('N')
+        # implment AC here
+        self.band = band
+        return self.band
 
     def populateOUI(self):
         """
