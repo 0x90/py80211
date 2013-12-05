@@ -74,7 +74,7 @@ if __name__ == "__main__":
                 rssi = bss[bssid].rssi
                 band = bss[bssid].getband()
                 rates = bss[bssid].rates
-                print ("%s %s %s %s %s %s %s %s %s %s" %(apbssid, essid, enc, cipher, auth, channel, oui, rssi, band, rates)).encode("utf-8")
+                print ("%s %s %s %s %s %s %s %s %s" %(apbssid, essid, enc, cipher, auth, channel, oui, rssi, band)).encode("utf-8")
             
             """
             Print out the clients and anything they are assoicated to
