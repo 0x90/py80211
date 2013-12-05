@@ -60,10 +60,9 @@ class accessPoint:
         add rates / extended rates
         """
         if type(rates) is list:
-            for rate in rates:
-                self.rates.append(int(rate))
+            self.rates.extend(rates)
         else:
-            self.rates.append(int(rates))
+            self.rates.append(rates)
         # sort rates so they are in order
         # ulgy hack to ensure uniqueness
         runique = {}
