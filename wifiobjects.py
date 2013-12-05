@@ -90,7 +90,7 @@ class accessPoint:
             band.append('N')
         # implment AC here
         self.band = band
-        return self.band
+        return "/".join(self.band)
 
     def populateOUI(self):
         """
