@@ -337,8 +337,6 @@ class Airview(threading.Thread):
         wired = None
         # actual client mac
         clientmac = None
-        # NOTE need to figure how to mark a client
-        # no longer assoicated
         clientrssi = None
         aprssi = None
         if ds == 0:
