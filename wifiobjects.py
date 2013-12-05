@@ -174,7 +174,7 @@ class client:
         self.oui = self.populateOUI() # populate clients oui lookup
         self.rssi = None              # client rssi
         self.apObject = None          # stores reference link to ap object when connected to bssid
-
+        
     def populateOUI(self):
         """
         populate the OUI vars for the object
@@ -198,6 +198,15 @@ class client:
         as an int
         """
         return len(self.probes)
+    
+    def getEssid(self):
+        """
+        return essid of current assoication
+        """
+        if self.apObject is not None:
+            return self.apObject.essid.encode('utf-8')
+        else:
+            return "Not Assoicated"
 
     def updateBssid(self, bssid):
         """
