@@ -98,11 +98,12 @@ if __name__ == "__main__":
                     assoicatedState = clients[mac].bssid
                 probes = clients[mac].probes
                 oui = clients[mac].oui
+                essid = clients[mac].getEssid()
                 # print out a probe list, otherwise just print the client and its assoication
                 if probes != []:
-                    print prettymac, assoicatedState, oui, rssi,','.join(probes)
+                    print prettymac, assoicatedState, essid, oui, rssi,','.join(probes)
                 else:
-                    print prettymac, assoicatedState, oui, rssi
+                    print prettymac, assoicatedState, essid, oui, rssi
     except KeyboardInterrupt:
         print "\nbye\n"
         airmonitor.kill()
