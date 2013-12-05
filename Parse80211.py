@@ -709,7 +709,12 @@ class Parse80211:
                 else:
                     # pull channel from radio tap
                     # may not be 100% correct
-                    channel = self.rtapData[3]
+                    if self.rtapData == -1:
+                        #mangled packet
+                        self.mangled = True
+                        self.mangledcount += 1
+                    else:
+                        channel = self.rtapData[3]
             else:
                 channel = self.IE.tagdata["channel"]
             # determine encryption level
