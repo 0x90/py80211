@@ -452,12 +452,17 @@ class Airview(threading.Thread):
                 # update channel
                 ap_object.channel = frame["channel"]
                 # rates
+                extended = frame["extended"]
                 try:
-                    ap_object.updaterates(frame["extended"]["exrates"])
+                    ap_object.updaterates(extended["exrates"])
                 except KeyError:
                     pass
                 try:
-                    ap_object.updaterates(frame["extended"]["rates"])
+                    ap_object.updaterates(extended["rates"])
+                except KeyError:
+                    pass
+                try:
+                    ap_object.htPresent = (extended["htPresent"])
                 except KeyError:
                     pass
                 # update ap_last time seen
