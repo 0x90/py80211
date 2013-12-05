@@ -13,7 +13,7 @@ class IeTag80211:
         """
         build parser for IE tags
         """
-        self.tagdata = {"unparsed":[]}  # dict to return parsed tags
+        self.tagdata = {"unparsed":[], "htPresent": False}  # dict to return parsed tags
         self.parser = {
             "\x00": self.ssid,  # ssid IE tag parser
             "\x01": self.rates,  # data rates tag parser
@@ -21,7 +21,19 @@ class IeTag80211:
             "\x30": self.rsn,  # rsn tag parser
             "\x32": self.exrates,  # extended rates tag parser
             "\xDD": self.vendor221, # 221 vendor tag parser
-                      }
+            "\x3D": self.htinfo,    # HT information tag checker
+            }
+    
+    def htinfo(self, rbytes):
+        """
+        Check for existance of HT tag to denote support
+        For 802.11N Mark its existance true for mgt frame
+        save the reported HT primary channel
+        """
+        self.tagdata["htPresent"] = True
+        # reported primary channel
+        self.tagdata["htPriCH"] = ord(rbytes[3])
+
     def vendor221(self, rbytes):
         """
         Parse the wpa IE tag 221 aka \xDD
@@ -501,7 +513,7 @@ class Parse80211:
             return None
         # parse radio tap if not 0
         try:
-            rtapData = self.parseRtap(data[:self.rt])
+            self.rtapData = self.parseRtap(data[:self.rt])
         except Exception:
             # bad rtap header, pass for now
             pass
@@ -529,11 +541,11 @@ class Parse80211:
                     # strip the headers
                     parsedFrame['rtap'] = self.rt
                     # get the rssi from rtap data
-                    if rtapData == -1:
+                    if self.rtapData == -1:
                         # truncated rtap, make rssi None
                         parsedFrame['rssi'] = None
                     else:
-                        parsedFrame['rssi'] = rtapData[5]
+                        parsedFrame['rssi'] = self.rtapData[5]
                     parsedFrame["raw"] = data
                 if ARP is True:
                     if stype == '\x08':
@@ -691,9 +703,13 @@ class Parse80211:
             else:
                 essid = self.IE.tagdata["ssid"]
             if "channel" not in self.IE.tagdata.keys():
-                self.mangled = True
-                self.mangledcount += 1
-                return -1
+                if "htPriCH" in self.IE.tagdata.keys():
+                    # get channel from HT ie tag
+                    channel = self.IE.tagdata["htPriCH"]
+                else:
+                    # pull channel from radio tap
+                    # may not be 100% correct
+                    channel = self.rtapData[3]
             else:
                 channel = self.IE.tagdata["channel"]
             # determine encryption level
