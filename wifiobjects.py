@@ -40,11 +40,13 @@ class accessPoint:
         self.encryption = None      # show encryption level
         self.auth = None            # show authentication settings
         self.cipher = None          # cipher, either CCMP, TKIP, wep 64/128
+        self.wps = False            # WPS support, its True/False
         self.channel = None         # ap's channel
         self.ssidList = []          # rolling list of seen ssid's for this ap
         self.oui = self.populateOUI() # lookup the object oui
         self.rssi = None            # current rssi
         self.rates = []             # list of supported rates
+        self.htPresent = False      # HT IE tags Indicates 802.11AC/N support
         self.band = []              # list of bands, a, ab, abg, ac, n
         self.fiveghzChannels = (36, 38,
             40, 42, 44, 46, 52, 56,
@@ -84,7 +86,7 @@ class accessPoint:
             band.append('A')
         elif 54 in self.rates and self.channel in self.twofourghzChannels:
             band.append('G')
-        if 150 in self.rates:
+        if self.htPresent is True:
             band.append('N')
         # implment AC here
         self.band = band
