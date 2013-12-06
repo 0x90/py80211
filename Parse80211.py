@@ -646,6 +646,8 @@ class Parse80211:
                 return -1
             else:
                 essid = self.IE.tagdata["ssid"]
+            # BUG HERE No channel in 5ghz probe
+            # REMOVE THISs
             if "channel" not in self.IE.tagdata.keys():
                 self.mangled = True
                 self.mangledcount += 1
