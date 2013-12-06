@@ -204,7 +204,10 @@ class client:
         return essid of current assoication
         """
         if self.apObject is not None:
-            return self.apObject.essid.encode('utf-8')
+            if self.apObject.essid is None:
+                return "<Hidden Essid>"
+            else:
+                return self.apObject.essid.encode('utf-8')
         else:
             return "Not Assoicated"
 
