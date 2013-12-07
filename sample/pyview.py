@@ -63,6 +63,7 @@ if __name__ == "__main__":
             print "Channel %i" %(airmonitor.channel)
             # print out the access points and their essids
             print "Access point"
+            print "BSSID             CH   RSS  ESSID     ENC     CIPHER      AUTH        BAND    COUNTRY     OUI"
             for bssid in bss.keys():
                 apbssid = ppmac(bssid)
                 essid = bss[bssid].essid
@@ -82,6 +83,7 @@ if __name__ == "__main__":
             as well as probes to the screen
             """
             print "\nClients"
+            print "BSSID              AssoicatedAP     ESSID       OUI        RSSI    PROBES"
             # get local copies from airview thread
             # local clients
             clients = airmonitor.clientObjects
@@ -102,7 +104,7 @@ if __name__ == "__main__":
                 essid = clients[mac].getEssid()
                 # print out a probe list, otherwise just print the client and its assoication
                 if probes != []:
-                    print prettymac, assoicatedState, essid, rssi ,oui, ','.join(probes)
+                    print prettymac, assoicatedState, essid, oui, rssi, ','.join(probes)
                 else:
                     print prettymac, assoicatedState, essid, oui, rssi
     except KeyboardInterrupt:
