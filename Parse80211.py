@@ -15,15 +15,22 @@ class IeTag80211:
         """
         self.tagdata = {"unparsed":[], "htPresent": False}  # dict to return parsed tags
         self.parser = {
-            "\x00": self.ssid,  # ssid IE tag parser
-            "\x01": self.rates,  # data rates tag parser
-            "\x03": self.channel,  # channel tag parser
-            "\x30": self.rsn,  # rsn tag parser
-            "\x32": self.exrates,  # extended rates tag parser
+            "\x00": self.ssid,      # ssid IE tag parser
+            "\x01": self.rates,     # data rates tag parser
+            "\x03": self.channel,   # channel tag parser
+            "\x30": self.rsn,       # rsn tag parser
+            "\x32": self.exrates,   # extended rates tag parser
             "\xDD": self.vendor221, # 221 vendor tag parser
             "\x3D": self.htinfo,    # HT information tag checker
+            "\x07": self.country,   # Country Code Parser
             }
     
+    def country(self, rbytes):
+        """
+        Return Country Code from beacon packet
+        """
+        self.tagdata["country"] = str(rbytes[2:4])
+
     def htinfo(self, rbytes):
         """
         Check for existance of HT tag to denote support
@@ -32,7 +39,7 @@ class IeTag80211:
         """
         self.tagdata["htPresent"] = True
         # reported primary channel
-        self.tagdata["htPriCH"] = ord(rbytes[3])
+        self.tagdata["htPriCH"] = ord(rbytes[2])
 
     def vendor221(self, rbytes):
         """
@@ -633,6 +640,7 @@ class Parse80211:
         src, dst, bssid, probe request
         """
         try:
+            channel = 0
             dsbits = ord(data[1]) & 3
             dst = data[4:10]  # destination addr 6 bytes
             src = data[10:16]  # source addr 6 bytes
@@ -646,6 +654,8 @@ class Parse80211:
                 return -1
             else:
                 essid = self.IE.tagdata["ssid"]
+            # BUG HERE No channel in 5ghz probe
+            # REMOVE THISs
             if "channel" not in self.IE.tagdata.keys():
                 self.mangled = True
                 self.mangledcount += 1

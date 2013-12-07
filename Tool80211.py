@@ -460,7 +460,11 @@ class Airview(threading.Thread):
                 except KeyError:
                     pass
                 try:
-                    ap_object.htPresent = (extended["htPresent"])
+                    ap_object.htPresent = extended["htPresent"]
+                except KeyError:
+                    pass
+                try:
+                   ap_object.country = extended["country"]
                 except KeyError:
                     pass
                 # update ap_last time seen
