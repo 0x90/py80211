@@ -47,6 +47,7 @@ class accessPoint:
         self.rssi = None            # current rssi
         self.rates = []             # list of supported rates
         self.htPresent = False      # HT IE tags Indicates 802.11AC/N support
+        self.country = None         # Country Code
         self.band = []              # list of bands, a, ab, abg, ac, n
         self.fiveghzChannels = (36, 38,
             40, 42, 44, 46, 52, 56,
