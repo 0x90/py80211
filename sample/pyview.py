@@ -74,7 +74,8 @@ if __name__ == "__main__":
                 rssi = bss[bssid].rssi
                 band = bss[bssid].getband()
                 rates = bss[bssid].rates
-                print ("%s %s %s %s %s %s %s %s %s" %(apbssid, essid, enc, cipher, auth, channel, oui, rssi, band)).encode("utf-8")
+                country = bss[bssid].country
+                print ("%s  %s  %s  %s  %s  %s  %s  %s  %s  %s" %(apbssid, channel, rssi , essid, enc, cipher, auth, band, country, oui)).encode("utf-8")
             
             """
             Print out the clients and anything they are assoicated to
@@ -101,7 +102,7 @@ if __name__ == "__main__":
                 essid = clients[mac].getEssid()
                 # print out a probe list, otherwise just print the client and its assoication
                 if probes != []:
-                    print prettymac, assoicatedState, essid, oui, rssi,','.join(probes)
+                    print prettymac, assoicatedState, essid, rssi ,oui, ','.join(probes)
                 else:
                     print prettymac, assoicatedState, essid, oui, rssi
     except KeyboardInterrupt:
