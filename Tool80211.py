@@ -188,8 +188,9 @@ class ChannelHop(threading.Thread):
         # default is 3/10 of a second
         # got the lists from kismet config file
         # thanks dragorn!
-        self.channellist = [1,6,11,14,2,7,3,8,4,9,5,10,
-            36,40,44,48,52,56,60,64,149,153,157,161,165]
+        self.channellist = [1, 6, 11, 14, 2, 7, 3, 8, 4, 9, 5, 10,
+        36, 38, 40, 42, 44, 46, 52, 56, 58, 60, 100, 104, 108, 112,
+        116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161, 165]
         self.hopList = []
         self.current = 0
         self.checkChannels()
