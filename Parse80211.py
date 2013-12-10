@@ -69,7 +69,9 @@ class IeTag80211:
             packetLen = ord(rbytes[1])
             vendor_OUI = rbytes[2:5]
             vendor_OUI_type = ord(rbytes[5])
+            vendor_OUI_stype = ord(rbytes[6])
             if vendor_OUI == "\x00\x50\xf2":
+                # Microsoft
                 if vendor_OUI_type == 1:
                     # WPA Element Parsing
                     version = struct.unpack('h', rbytes[6:8])[0]
@@ -133,6 +135,12 @@ class IeTag80211:
                         # wps is configured
                         wpsState = "configured"
                     self.tagdata["wps"] = {"state": wpsState}
+            if vendor_OUI == "\x00\x0b\x86":
+                # aruba
+                if vendor_OUI_type == 1:
+                   if vendor_OUI_stype == 3:
+                        # aruba does ap hostname this way
+                        self.tagdata["APhostname"] = rbytes[7:]
         except IndexError:
             # mangled packets
             return -1
