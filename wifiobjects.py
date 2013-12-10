@@ -33,6 +33,7 @@ class accessPoint:
         self.fts = time.time()      # first time object is seen
         self.lts = None             # last time object is seen, update on every acccess
         self.name = "accessPoint"   # object type
+        self.hostname = None        # device hostname as reported by AP (not all vendors support)
         self.connectedClients = []  # list of connected clients
         self.essid = None           # broadcasted essid
         self.bssid = bssid          # bssid of ap
