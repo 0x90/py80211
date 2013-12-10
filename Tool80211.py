@@ -468,6 +468,10 @@ class Airview(threading.Thread):
                    ap_object.country = extended["country"]
                 except KeyError:
                     pass
+                try:
+                    ap_object.hostname = extended["APhostname"]
+                except KeyError:
+                    pass
                 # update ap_last time seen
                 ap_object.lts = time.time()
                 # update the ess
