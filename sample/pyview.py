@@ -65,18 +65,20 @@ if __name__ == "__main__":
             print "Access point"
             print "BSSID             CH   RSS  ESSID     ENC     CIPHER      AUTH        BAND    COUNTRY     OUI"
             for bssid in bss.keys():
+                ap = bss[bssid]
                 apbssid = ppmac(bssid)
-                essid = bss[bssid].essid
-                enc = bss[bssid].encryption
-                auth = bss[bssid].auth
-                channel = bss[bssid].channel
-                cipher = bss[bssid].cipher
-                oui = bss[bssid].oui
-                rssi = bss[bssid].rssi
-                band = bss[bssid].getband()
-                rates = bss[bssid].rates
-                country = bss[bssid].country
-                print ("%s  %s  %s  %s  %s  %s  %s  %s  %s  %s" %(apbssid, channel, rssi , essid, enc, cipher, auth, band, country, oui)).encode("utf-8")
+                essid = ap.essid
+                enc = ap.encryption
+                auth = ap.auth
+                channel = ap.channel
+                cipher = ap.cipher
+                oui = ap.oui
+                rssi = ap.rssi
+                band = ap.getband()
+                rates = ap.rates
+                country = ap.country
+                hostname = ap.hostname
+                print ("%s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s" %(apbssid, channel, rssi , essid, enc, cipher, auth, band, country, oui, hostname)).encode("utf-8")
             
             """
             Print out the clients and anything they are assoicated to
