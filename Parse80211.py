@@ -23,8 +23,17 @@ class IeTag80211:
             "\xDD": self.vendor221, # 221 vendor tag parser
             "\x3D": self.htinfo,    # HT information tag checker
             "\x07": self.country,   # Country Code Parser
+            "\x85": self.ccxOne,    # Cisco CCX v1 Parser
             }
     
+    def ccxOne(self, rbytes):
+        """
+        Parse ap hostname and number of clients
+        from cisco CCX v1 IE tag
+        """
+        self.tagdata["APhostname"] = str(rbytes[12:-4])
+        self.tagdata["ClientNum"] = ord(rbytes[-1])
+
     def country(self, rbytes):
         """
         Return Country Code from beacon packet
