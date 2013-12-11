@@ -63,7 +63,7 @@ if __name__ == "__main__":
             print "Channel %i" %(airmonitor.channel)
             # print out the access points and their essids
             print "Access point"
-            print "BSSID             CH   RSS  ESSID     ENC     CIPHER      AUTH        BAND    COUNTRY     OUI"
+            print "BSSID             CH   RSS  ESSID        ENC    CIPHER      AUTH        BAND    COUNTRY     OUI      HOSTNAME            REPORTED    SNIFFED"
             for bssid in bss.keys():
                 ap = bss[bssid]
                 apbssid = ppmac(bssid)
@@ -78,7 +78,12 @@ if __name__ == "__main__":
                 rates = ap.rates
                 country = ap.country
                 hostname = ap.hostname
-                print ("%s  %s  %s  %s  %s  %s  %s  %s  %s  %s  %s" %(apbssid, channel, rssi , essid, enc, cipher, auth, band, country, oui, hostname)).encode("utf-8")
+                seenClient = ap.numClients()[0]
+                reportedClient = ap.numClients()[1]
+                print ("%s  %s  %s  %s      %s    %s        %s    %s    %s    %s    %s    %s  %s" %(apbssid, 
+                    rssi, channel, essid, enc, cipher, 
+                    auth, band, country, oui,
+                     hostname, seenClient, reportedClient)).encode("utf-8")
             
             """
             Print out the clients and anything they are assoicated to
