@@ -472,6 +472,10 @@ class Airview(threading.Thread):
                     ap_object.hostname = extended["APhostname"]
                 except KeyError:
                     pass
+                try:
+                    ap_object.reportedclients = extended["ClientNum"]
+                except KeyError:
+                    pass
                 # update ap_last time seen
                 ap_object.lts = time.time()
                 # update the ess
