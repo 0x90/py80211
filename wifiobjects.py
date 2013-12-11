@@ -50,6 +50,7 @@ class accessPoint:
         self.htPresent = False      # HT IE tags Indicates 802.11AC/N support
         self.country = None         # Country Code
         self.band = []              # list of bands, a, ab, abg, ac, n
+        self.reportedclients = 0    # number of clients AP reports to have
         self.fiveghzChannels = (36, 38,
             40, 42, 44, 46, 52, 56,
             58, 60, 100, 104, 108, 112,
@@ -126,9 +127,9 @@ class accessPoint:
     def numClients(self):
         """
         return number of connected clients
-        as an int
+        as an tuple, number we see, reported by cisco ap's
         """
-        return len(self.connectedclients)
+        return (len(self.connectedClients), self.reportedclients)
     
     def updateEssid(self, essid, iternum=3):
         """
