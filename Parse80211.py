@@ -356,6 +356,24 @@ class Parse80211:
             "v6Neigh" : '\x33\x33\xff\x00\x00\x00' # ipv6 neighborhood discovery
         }
         
+        self.freqLookup = {
+            2412 : 1, 2417 : 2, 2422 : 3,
+            2427 : 4, 2432 : 5, 2437 : 6,
+            2442 : 7, 2447 : 8, 2452 : 9,
+            2457 : 10, 2462 : 11, 2467 : 12,
+            2472 : 13, 2484 : 14, 5170 : 34, 
+            5180 : 36, 5190 : 38, 5200 : 40, 
+            5210 : 42, 5220 : 44, 5230 : 46, 
+            5240 : 48, 5260 : 52, 5280 : 56, 
+            5300 : 58, 5320 : 60, 5500 : 100, 
+            5520 : 104, 5540 : 108, 5560 : 112, 
+            5580 : 116, 5600 : 120, 5620 : 120, 
+            5620 : 124, 5640 : 128, 5660 : 132, 
+            5680 : 136, 5700 : 140, 5745 : 149, 
+            5765 : 153, 5785 : 157, 5805 : 161, 
+            5825 : 165
+            }
+    
     def isBcast(self, mac):
         """
         returns boolen if mac is a broadcast/multicast mac
@@ -403,7 +421,6 @@ class Parse80211:
         RTAP_RTS_RETRIES = 16
         RTAP_DATA_RETRIES = 17
         RTAP_EXT = 31 # Denotes extended "present" fields.
-        
         self._PREAMBLE_FORMAT = "<BxHI"
         self._PREAMBLE_SIZE = struct.calcsize(self._PREAMBLE_FORMAT)
         try:
@@ -430,7 +447,7 @@ class Parse80211:
                 rformat += "B"
                 fields.append(RTAP_FLAGS)
         if p & 1 << RTAP_RATE:
-                rformat += "B"
+                rformat += "b"
                 fields.append(RTAP_RATE)
         if p & 1 << RTAP_CHANNEL:
                 # Align to 16 bit boundary:
@@ -531,6 +548,7 @@ class Parse80211:
             self.rtapData = self.parseRtap(data[:self.rt])
         except Exception:
             # bad rtap header, pass for now
+            self.rtapData = -1
             pass
         # determine frame subtype
         ptype = ord(data[self.rt])
@@ -720,19 +738,22 @@ class Parse80211:
                 return -1
             else:
                 essid = self.IE.tagdata["ssid"]
+            channel = 0
+            freq = 0
+            # pull channel from radio tap
+            # may not be 100% correct
+            if self.rtapData == -1:
+                #mangled packet
+                self.mangled = True
+                self.mangledcount += 1
+            else:
+                freq = self.rtapData[3] & 0xFFFF
             if "channel" not in self.IE.tagdata.keys():
                 if "htPriCH" in self.IE.tagdata.keys():
                     # get channel from HT ie tag
                     channel = self.IE.tagdata["htPriCH"]
                 else:
-                    # pull channel from radio tap
-                    # may not be 100% correct
-                    if self.rtapData == -1:
-                        #mangled packet
-                        self.mangled = True
-                        self.mangledcount += 1
-                    else:
-                        channel = self.rtapData[3]
+                    channel = self.freqLookup[freq]
             else:
                 channel = self.IE.tagdata["channel"]
             # determine encryption level
