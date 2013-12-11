@@ -61,6 +61,7 @@ class IeTag80211:
             5 : "WEP-104/128"
             }
         authKey = {
+            0 : "None",
             1 : "802.1x or PMK",
             2 : "PSK",
             }
@@ -235,6 +236,7 @@ class IeTag80211:
             5 : "WEP-104/128"
             }
         authKey = {
+            0 : "None",
             1 : "802.1x or PMK",
             2 : "PSK",
             }
