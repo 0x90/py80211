@@ -90,7 +90,7 @@ if __name__ == "__main__":
             as well as probes to the screen
             """
             print "\nClients"
-            print "BSSID              AssoicatedAP     ESSID       OUI        RSSI    PROBES"
+            print "Client Mac           AssoicatedAP     ESSID       OUI        RSSI    PROBES"
             # get local copies from airview thread
             # local clients
             clients = airmonitor.clientObjects
