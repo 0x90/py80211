@@ -221,12 +221,13 @@ class ifaceTunnel(threading.Thread):
         """
         return self.packetque.qsize()
 
-    def fillQueue(self, ptklen, data, tstamp):
+    def fillQueue(self, pktlen, data, tstamp):
         """
         populate the packet queue
         """
         if not data:
             return
+        print data
         self.packetque.put((pktlen, data, tstamp))
 
     def startsniffer(self):
