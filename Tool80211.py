@@ -4,6 +4,8 @@ import sys
 import os
 import fcntl
 import struct
+from Queue import Queue as queue
+from Queue import Empty
 from select import select
 import pcap
 # custom imports
@@ -16,11 +18,19 @@ from wifiobjects import *
 import pdb
 import sys
 
-class iface80211:
+class iface80211(threading.Thread):
     """
     handle 80211 interfacs
     """
-    
+    def __init__(self):
+        """
+        init to allow threading
+        """
+        threading.Thread.__init__(self)
+        threading.Thread.daemon = True
+        self.packetque = queue()
+        self.stop = False
+
     def inject(self, packet):
         """
         send bytes to pylorcon interface
@@ -78,7 +88,7 @@ class iface80211:
             # snag a packet to look at header, this should always be a
             # packet that wasnt injected so should have a rt header
             while packet is None:
-                frame = self.getFrame()
+                frame = self.lp.next()
                 if frame is not None:
                     packet = frame[1]
             # set known header size
@@ -91,7 +101,38 @@ class iface80211:
         """
         return a frame from libpcap
         """
-        return self.lp.next()
+        try:
+            return self.packetque.get(1, 1)
+        except Empty:
+            return None
+    
+    def quesize(self):
+        """
+        return number of frames in the internal queue
+        """
+        return self.packetque.qsize()
+
+    def fillQueue(self, pktlen, data, tstamp):
+        """
+        populate the packet queue
+        """
+        if not data:
+            return
+        self.packetque.put((pktlen, data, tstamp))
+        
+    def startsniffer(self):
+        """
+        Start dispatch and fill up the queue
+        getFrame can pop items off it
+        """
+        while self.stop is False:
+            self.lp.dispatch(10, self.fillQueue)
+
+    def run(self):
+        """
+        Start the sniffer thread
+        """
+        self.startsniffer()
 
 
 class ifaceTunnel:
@@ -299,7 +340,9 @@ class Airview(threading.Thread):
         self.rd = Parse80211.Parse80211(rtapHeader[0], rtapHeader[1])
         # start the hopper
         self.hopper = ChannelHop(self.ctx)
-        
+        # start sniffing
+        self.intf.start()
+
         #### New code ####
         # dict object to store client objects in 
         # format is {mac_address:object}
