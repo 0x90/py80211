@@ -227,7 +227,6 @@ class ifaceTunnel(threading.Thread):
         """
         if not data:
             return
-        print data
         self.packetque.put((pktlen, data, tstamp))
 
     def startsniffer(self):
