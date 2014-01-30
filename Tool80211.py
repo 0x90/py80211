@@ -234,7 +234,7 @@ class ifaceTunnel(threading.Thread):
         read a packet from tun interface using pylibpcap
         """
         while self.stop is False:
-            frame = self.lp.loop(0, selff.fillQueue)
+            frame = self.lp.loop(0, self.fillQueue)
    
     def writeTun(self, frame):
         """
