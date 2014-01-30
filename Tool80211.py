@@ -157,6 +157,7 @@ class ifaceTunnel(threading.Thread):
         self.IFF_TAP = 0x0002
         self.IFF_NO_PI = 0x1000
         self.packetque = queue()
+        self.stop = False
 
     def checkTun(self, path):
         """
