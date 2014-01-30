@@ -99,7 +99,7 @@ class iface80211(threading.Thread):
 
     def getFrame(self):
         """
-        return a frame from libpcap
+        return a frame from internal queue
         """
         try:
             return self.packetque.get(1, 1)
@@ -145,7 +145,7 @@ class ifaceTunnel:
         self.IFF_TUN = 0x0001
         self.IFF_TAP = 0x0002
         self.IFF_NO_PI = 0x1000
-
+        self.packetque = queue()
 
     def checkTun(self, path):
         """
@@ -188,18 +188,42 @@ class ifaceTunnel:
     def readTun(self):
         """
         read a packet from tun interface
+        deprecated
         """
         packet = select([self.tun],[],[])[0]
         if self.tun in packet:
             return os.read(self.tun, 1526)
     
-    def sniffTun(self, ARP=False):
+    def getFrame(self):
+        """
+        return a frame from internal queue
+        """
+        try:
+            return self.packetque.get(1, 1)
+        except Empty:
+            return None
+    
+    def quesize(self):
+        """
+        return the number of frames in the internal queue
+        """
+        return self.packetque.qsize()
+
+    def fillQueue(self, ptklen, data, tstamp):
+        """
+        populate the packet queue
+        """
+        if not data:
+            return
+        self.packetque.put((pktlen, data, tstamp))
+
+    def startsniffer(self):
         """
         read a packet from tun interface using pylibpcap
         """
-        frame = self.lp.next()
-        return frame
-    
+        while self.stop is False:
+            frame = self.lp.loop(0, selff.fillQueue)
+   
     def writeTun(self, frame):
         """
         write a packet to tun interface
@@ -209,6 +233,12 @@ class ifaceTunnel:
         # interfaces. It is an identifier for the Kernel.
         eth_sent_frame = "\x00\x00\x00\x00" + str(frame)     
         os.write(self.tun, eth_sent_frame)
+    
+    def run(self):
+        """
+        Start the sniffer thread
+        """
+        self.startsniffer()
 
 
 class ChannelHop(threading.Thread):
