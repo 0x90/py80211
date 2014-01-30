@@ -96,6 +96,15 @@ class iface80211(threading.Thread):
         else:
             rth = False
         return (rth, headsize)
+    
+    def pcapfilter(self, usrfilter):
+        """
+        set a libpcap filter
+        see here for doc 
+        http://www.tcpdump.org/manpages/pcap-filter.7.txt
+        # for data packets its "type data"
+        """
+        self.lp.setfilter(usrfilter, 0, 0)
 
     def getFrame(self):
         """
@@ -135,11 +144,13 @@ class iface80211(threading.Thread):
         self.startsniffer()
 
 
-class ifaceTunnel:
+class ifaceTunnel(threading.Thread):
     """
     create and use tun devices
     """
     def __init__(self):
+        threading.Thread.__init__(self)
+        threading.Thread.daemon = True
         self.TUNSETIFF = 0x400454ca
         self.TUNSETOWNER = self.TUNSETIFF + 2
         self.IFF_TUN = 0x0001
