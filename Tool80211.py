@@ -102,7 +102,7 @@ class iface80211(threading.Thread):
         return a frame from libpcap
         """
         try:
-            return self.packetque.get(1, 1)
+            return self.packetque.get(1)
         except Empty:
             return None
     
