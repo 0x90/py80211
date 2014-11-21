@@ -740,9 +740,15 @@ class Parse80211:
             # parse the IE tags
             # bits 34 and 35 are capabilities
             beaconWepBit = False
-            if (struct.unpack('h', data[34:36])[0] & 16):
-                beaconWepBit = True
-            self.IE.parseIE(data[36:])
+            try:
+                if (struct.unpack('h', data[34:36])[0] & 16):
+                    beaconWepBit = True
+                self.IE.parseIE(data[36:])
+            except:
+                # mangled packet
+                self.mangled = True
+                self.mangledcount += 1
+                return -1
             if "ssid" not in self.IE.tagdata.keys():
                 self.mangled = True
                 self.mangledcount += 1
