@@ -69,7 +69,7 @@ class iface80211(threading.Thread):
         """
         self.moniface["ctx"].close()
 
-    def openLiveSniff(self, dev):
+    def openLiveSniff(self, dev, filter=None):
         """
         open up a libpcap object
         def = mon mode interface as string aka wlan0
@@ -83,6 +83,8 @@ class iface80211(threading.Thread):
             print "Use https://github.com/signed0/pylibpcap.git"
         # check what these numbers mean
         self.lp.open_live(dev, 1600, 0 ,100)
+        if filter is not None:
+            self.lp.setfilter(filter, 0, 0)
         if self.lp.datalink() == 127:
             rth = True
             # snag a packet to look at header, this should always be a
@@ -354,12 +356,13 @@ class Airview(threading.Thread):
     # will need to refactor code to deal with more then one in the future
     # dong this for time right now
     """
-    def __init__(self, interface, mon=False):
+    def __init__(self, interface, mon=False , filter=None):
         """
         Open up a packet parser for a given interface and create monitor mode interface
         Thread the instance
         interface = interface as string
         if mon = True then interface = to the dicitionary object from iface80211
+        filter = libpcap filter to pass to pylibpcap
         """
         self.stop = False
         self.hopper = ""
@@ -377,7 +380,7 @@ class Airview(threading.Thread):
         # get context for dealing with channel hopper
         self.ctx = monif["ctx"]
         # open up a parser
-        rtapHeader = self.intf.openLiveSniff(self.iface)
+        rtapHeader = self.intf.openLiveSniff(self.iface, filter)
         # pass in rtap boolean, and real header size, as deved by live sniff
         self.rd = Parse80211.Parse80211(rtapHeader[0], rtapHeader[1])
         # start the hopper
