@@ -442,7 +442,7 @@ class Parse80211:
         pp = p
         skip = 0
         while pp & 1 << RTAP_EXT:
-                pp = buf[self._PREAMBLE_SIZE + skip]
+                pp = rtap[self._PREAMBLE_SIZE + skip]
                 skip += 1
         
         # Generate a rformat string to be passed to unpack
