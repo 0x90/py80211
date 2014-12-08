@@ -1,9 +1,271 @@
 __author__ = "TheX1le, Crypt0s, radiotap parsing orginally by Scott Raynel in the radiotap.py project"
 
-import sys
+import collections
 import struct
+from flufl.enum import IntEnum
 import pdb
 
+class RadioTapHeader(IntEnum) :
+    VERSION = 0
+    LENGTH = 1
+    PRESENCE = 2
+    EXTENDED_PRESENCE = 3
+
+class RadioTapDefinedFields(IntEnum) :
+    TSFT = 0
+    FLAGS = 1
+    RATE = 2
+    CHANNEL = 3
+    FHSS = 4
+    ANTENNA_SIGNAL = 5
+    ANTENNA_NOISE = 6
+    LOCK_QUALITY = 7
+    TX_ATTENUATION = 8
+    DB_TX_ATTENUATION = 9
+    DBM_TX_POWER = 10
+    ANTENNA = 11
+    DB_ANTENNA_SIGNAL = 12
+    DB_ANTENNA_NOISE = 13
+    RX_FLAGS = 14
+    #TX_FLAGS = 15
+    #RTS_RETRIES = 16
+    #DATA_RETRIES = 17
+    #X_CHANNEL = 18
+    MCS = 19
+    A_MPDU = 20
+    VHT = 21
+
+class RadioTapReservedFields(IntEnum) :
+    RADIOTAP_NAMESPACE = 29
+    VENDOR_NAMESPACE = 30
+    EXTENDED = 31            # Extended presence bitmaps
+
+class RadioTapFieldChannel(IntEnum) :
+    FREQUENCY = 0
+    FLAGS = 1
+
+class RadioTapFieldFhss(IntEnum) :
+    HOP_SET = 0
+    HOP_PATTERN = 1
+
+class RadioTapFieldMcs(IntEnum) :
+    KNOWN = 0
+    FLAGS = 1
+    MCS = 2
+
+class RadioTapFieldAmpdu(IntEnum) :
+    REFERENCE_NUMBER = 0
+    FLAGS = 1
+    DELIMITER_CRC = 2
+    RESERVED = 3
+
+class RadioTapFieldVht(IntEnum) :
+    KNOWN = 0
+    FLAGS = 1
+    BANDWIDTH = 2
+    MCS_NSS_0 = 3
+    MCS_NSS_1 = 4
+    MCS_NSS_2 = 5
+    MCS_NSS_3 = 6
+    CODING = 7
+    GROUP_ID = 8
+    PARTIAL_AID = 9
+
+RadioTapFieldProperties = collections.namedtuple('RadioTapFieldProperties', ['field', 'alignment', 'format', 'members'])
+
+class RadioTapDecoder():
+    LITTLE_ENDIAN = '<'
+    HEADER_FORMAT = LITTLE_ENDIAN + 'BxHI'
+    BITMAP_EXT_FORMAT = LITTLE_ENDIAN + 'I'
+
+    def __init__(self) :
+        self._offset = 0
+        self._header = None
+        self._defined_fields = { }
+
+        self._defined_fields_properties = {
+            RadioTapDefinedFields.TSFT: RadioTapFieldProperties(
+                RadioTapDefinedFields.TSFT,
+                8,
+                self.LITTLE_ENDIAN + 'Q',
+                None),
+            RadioTapDefinedFields.FLAGS: RadioTapFieldProperties(
+                RadioTapDefinedFields.FLAGS,
+                1,
+                self.LITTLE_ENDIAN + 'B',
+                None),
+            RadioTapDefinedFields.RATE: RadioTapFieldProperties(
+                RadioTapDefinedFields.RATE,
+                1,
+                self.LITTLE_ENDIAN + 'B',
+                None),
+            RadioTapDefinedFields.CHANNEL: RadioTapFieldProperties(
+                RadioTapDefinedFields.CHANNEL,
+                2,
+                self.LITTLE_ENDIAN + 'HH',
+                RadioTapFieldChannel),
+            RadioTapDefinedFields.FHSS: RadioTapFieldProperties(
+                RadioTapDefinedFields.FHSS,
+                1,
+                self.LITTLE_ENDIAN + 'BB',
+                RadioTapFieldFhss),
+            RadioTapDefinedFields.ANTENNA_SIGNAL: RadioTapFieldProperties(
+                RadioTapDefinedFields.ANTENNA_SIGNAL,
+                1,
+                self.LITTLE_ENDIAN + 'b',
+                None),
+            RadioTapDefinedFields.ANTENNA_NOISE: RadioTapFieldProperties(
+                RadioTapDefinedFields.ANTENNA_NOISE,
+                1,
+                self.LITTLE_ENDIAN + 'b',
+                None),
+            RadioTapDefinedFields.LOCK_QUALITY: RadioTapFieldProperties(
+                RadioTapDefinedFields.LOCK_QUALITY,
+                2,
+                self.LITTLE_ENDIAN + 'H',
+                None),
+            RadioTapDefinedFields.TX_ATTENUATION: RadioTapFieldProperties(
+                RadioTapDefinedFields.TX_ATTENUATION,
+                2,
+                self.LITTLE_ENDIAN + 'H',
+                None),
+            RadioTapDefinedFields.DB_TX_ATTENUATION: RadioTapFieldProperties(
+                RadioTapDefinedFields.DB_TX_ATTENUATION,
+                2,
+                self.LITTLE_ENDIAN + 'H',
+                None),
+            RadioTapDefinedFields.DBM_TX_POWER: RadioTapFieldProperties(
+                RadioTapDefinedFields.DBM_TX_POWER,
+                1,
+                self.LITTLE_ENDIAN + 'b',
+                None),
+            RadioTapDefinedFields.ANTENNA: RadioTapFieldProperties(
+                RadioTapDefinedFields.ANTENNA,
+                1,
+                self.LITTLE_ENDIAN + 'B',
+                None),
+            RadioTapDefinedFields.DB_ANTENNA_SIGNAL: RadioTapFieldProperties(
+                RadioTapDefinedFields.DB_ANTENNA_SIGNAL,
+                1,
+                self.LITTLE_ENDIAN + 'B',
+                None),
+            RadioTapDefinedFields.DB_ANTENNA_NOISE: RadioTapFieldProperties(
+                RadioTapDefinedFields.DB_ANTENNA_NOISE,
+                1,
+                self.LITTLE_ENDIAN + 'B',
+                None),
+            RadioTapDefinedFields.RX_FLAGS: RadioTapFieldProperties(
+                RadioTapDefinedFields.RX_FLAGS,
+                2,
+                self.LITTLE_ENDIAN + 'H',
+                None),
+            RadioTapDefinedFields.MCS: RadioTapFieldProperties(
+                RadioTapDefinedFields.MCS,
+                1,
+                self.LITTLE_ENDIAN + 'BBB',
+                RadioTapFieldMcs),
+            RadioTapDefinedFields.A_MPDU: RadioTapFieldProperties(
+                RadioTapDefinedFields.A_MPDU,
+                4,
+                self.LITTLE_ENDIAN + 'IHBB',
+                RadioTapFieldAmpdu),
+            RadioTapDefinedFields.VHT: RadioTapFieldProperties(
+                RadioTapDefinedFields.VHT,
+                2,
+                self.LITTLE_ENDIAN + 'HBBBBBBBBH',
+                RadioTapFieldVht)
+        }
+
+    @property
+    def header(self) :
+        return self._header
+
+    @property
+    def defined_fields(self) :
+        return self._defined_fields
+
+    def decode(self, buffer) :
+        self._header = self._decode_header(buffer)
+
+        presence_standard_mask = 0
+        for field in RadioTapDefinedFields :
+            presence_standard_mask = presence_standard_mask | (1 << field.value)
+        for field in RadioTapReservedFields :
+            presence_standard_mask = presence_standard_mask | (1 << field.value)
+
+        if self._header[RadioTapHeader.PRESENCE] & (0xFFFFFFFF & (~ presence_standard_mask)) :
+            raise ValueError('Unsupported fields in standard presence bitmap.')
+
+        self._decode_defined_fields(buffer)
+
+    def _decode_defined_fields(self, buffer) :
+
+        defined_fields = [ field for field in RadioTapDefinedFields ]
+        defined_fields.sort(key=lambda x: x.value)
+
+        for field in defined_fields :
+            value = self._decode_field(self._defined_fields_properties[field], buffer)
+            if value is not None :
+                self._defined_fields[field] = value
+
+    def _decode_header(self, buffer) :
+        self._offset = struct.calcsize(self.HEADER_FORMAT)
+        version, length, bitmap = struct.unpack(self.HEADER_FORMAT, buffer[:self._offset])
+
+        bitmap_ext = None
+        bitmap_ext_mask = (1 << RadioTapReservedFields.EXTENDED.value)
+
+        if bitmap & bitmap_ext_mask :
+            # Extended presence bit set, decode until we do not see one
+            bitmap_ext = [ ]
+            bitmap_ext_value = bitmap
+            bitmap_ext_size = struct.calcsize(self.BITMAP_EXT_FORMAT)
+
+            while bitmap_ext_value & bitmap_ext_mask :
+                (bitmap_ext_value, ) = struct.unpack(self.BITMAP_EXT_FORMAT, buffer[self._offset:][:bitmap_ext_size])
+                bitmap_ext.append(bitmap_ext_value)
+                self._offset += bitmap_ext_size
+
+        return { RadioTapHeader.VERSION: version,
+                 RadioTapHeader.LENGTH: length,
+                 RadioTapHeader.PRESENCE: bitmap,
+                 RadioTapHeader.EXTENDED_PRESENCE: bitmap_ext }
+
+    def _align_field(self, alignment) :
+        if alignment == 1 :
+            return
+
+        delta = self._offset % alignment
+
+        if delta == 0 :
+            return
+
+        self._offset += (alignment - delta)
+
+    def _decode_field(self, properties, buffer) :
+        if not self._header[RadioTapHeader.PRESENCE] & (1 << properties.field.value) :
+            return None
+
+        self._align_field(properties.alignment)
+
+        field_size = struct.calcsize(properties.format)
+
+        values = struct.unpack(properties.format, buffer[self._offset:][:field_size])
+
+        return_value = None
+
+        if properties.members is None :
+            return_value = values[0]
+        else :
+            return_value = { }
+            field_members = [ member for member in properties.members ]
+            field_members.sort(key=lambda x: x.value)
+            for member in field_members :
+                return_value[member] = values[member.value]
+
+        self._offset += field_size
+
+        return return_value
 
 class IeTag80211:
     """
@@ -315,6 +577,7 @@ class Parse80211:
         rth = Boolean if there is Radio tap header
         headersize = actual header size
         """
+        self.rt = 0
         self.rth = rth
         self.headsize = headsize
         # this gets set to True if were seeing mangled packets
@@ -404,134 +667,11 @@ class Parse80211:
 
     def parseRtap(self, rtap):
         """
-        radio tap parser taken from http://code.google.com/p/python-radiotap/source/browse/trunk/radiotap.py
-        orginal author, c) 2007 Scott Raynel <scottraynel@gmail.com>
-        Minor changes by TheX1le
+        Pass rtap data off to the radio tap decoder
         """
-        # All Radiotap fields are in little-endian byte-order.
-        # We use our own alignment rules, hence '<'.
-        data = {}
-        fields = []
-        rformat = "<"
-        RTAP_TSFT = 0
-        RTAP_FLAGS = 1
-        RTAP_RATE = 2
-        RTAP_CHANNEL = 3
-        RTAP_FHSS = 4
-        RTAP_DBM_ANTSIGNAL = 5
-        RTAP_DBM_ANTNOISE = 6
-        RTAP_LOCK_QUALITY = 7
-        RTAP_TX_ATTENUATION = 8
-        RTAP_DB_TX_ATTENUATION = 9
-        RTAP_DBM_TX_POWER = 10
-        RTAP_ANTENNA = 11
-        RTAP_DB_ANTSIGNAL = 12
-        RTAP_DB_ANTNOISE = 13
-        RTAP_RX_FLAGS = 14
-        RTAP_TX_FLAGS = 15
-        RTAP_RTS_RETRIES = 16
-        RTAP_DATA_RETRIES = 17
-        RTAP_EXT = 31 # Denotes extended "present" fields.
-        self._PREAMBLE_FORMAT = "<BxHI"
-        self._PREAMBLE_SIZE = struct.calcsize(self._PREAMBLE_FORMAT)
-        try:
-            (v,l,p) = self._unpack_preamble(rtap)
-        except Exception:
-            return -1
-        # Skip extended bitmasks
-        pp = p
-        skip = 0
-        while pp & 1 << RTAP_EXT:
-                pp = rtap[self._PREAMBLE_SIZE + skip]
-                skip += 1
-        
-        # Generate a rformat string to be passed to unpack
-        # To do this, we look at each of the radiotap fields
-        # we know about in order. We have to make sure that
-        # we keep all fields aligned to the field's natural
-        # boundary. E.g. 16 bit fields must be on a 16-bit boundary.
-
-        if p & 1 << RTAP_TSFT:
-                rformat += "Q"
-                fields.append(RTAP_TSFT)
-        if p & 1 << RTAP_FLAGS:
-                rformat += "B"
-                fields.append(RTAP_FLAGS)
-        if p & 1 << RTAP_RATE:
-                rformat += "b"
-                fields.append(RTAP_RATE)
-        if p & 1 << RTAP_CHANNEL:
-                # Align to 16 bit boundary:
-                rformat += self._field_align(2, rformat)
-                rformat += "I"
-                fields.append(RTAP_CHANNEL)
-        if p & 1 << RTAP_FHSS:
-                rformat += "H"
-                fields.append(RTAP_FHSS)
-        if p & 1 << RTAP_DBM_ANTSIGNAL:
-                rformat += "b"
-                fields.append(RTAP_DBM_ANTSIGNAL)
-        if p & 1 << RTAP_DBM_ANTNOISE:
-                rformat += "b"
-                fields.append(RTAP_DBM_ANTNOISE)
-        if p & 1 << RTAP_LOCK_QUALITY:
-                rformat += self._field_align(2, rformat)
-                rformat += "H"
-                fields.append(RTAP_LOCK_QUALITY)
-        if p & 1 << RTAP_TX_ATTENUATION:
-                rformat += self._field_align(2, rformat)
-                rformat += "H"
-                fields.append(RTAP_TX_ATTENUATION)
-        if p & 1 << RTAP_DBM_TX_POWER:
-                rformat += "b"
-                fields.append(RTAP_DBM_TX_POWER)
-        if p & 1 << RTAP_ANTENNA:
-                rformat += "B"
-                fields.append(RTAP_ANTENNA)
-        if p & 1 << RTAP_DB_ANTSIGNAL:
-                rformat += "B"
-                fields.append(RTAP_DB_ANTSIGNAL)
-        if p & 1 << RTAP_DB_ANTNOISE:
-                rformat += "B"
-                fields.append(RTAP_DB_ANTNOISE)
-        if p & 1 << RTAP_RX_FLAGS:
-                rformat += self._field_align(2, rformat)
-                rformat += "H"
-                fields.append(RTAP_RX_FLAGS)
-        if p & 1 << RTAP_TX_FLAGS:
-                rformat += self._field_align(2, rformat)
-                rformat += "H"
-                fields.append(RTAP_TX_FLAGS)
-        if p & 1 << RTAP_RTS_RETRIES:
-                rformat += "B"
-                fields.append(RTAP_RTS_RETRIES)
-        if p & 1 << RTAP_DATA_RETRIES:
-                rformat += "B"
-                fields.append(RTAP_DATA_RETRIES)
-
-        end = self._PREAMBLE_SIZE + skip + struct.calcsize(rformat)
-        unpacked = struct.unpack(rformat, rtap[self._PREAMBLE_SIZE + skip:end])
-
-        for i in range(len(unpacked)):
-                data[fields[i]] = unpacked[i]
-        return data
-    
-    def _unpack_preamble(self, buf):
-        if len(buf) < self._PREAMBLE_SIZE:
-                raise Exception("Truncated at Radiotap preamble.")
-        (v,l,p) = struct.unpack(self._PREAMBLE_FORMAT, buf[:self._PREAMBLE_SIZE])
-        if v != 0:
-                raise Exception("Radiotap version not handled")
-        return (v,l,p)
-
-    def _field_align(self, fbytes, string):
-        """ Returns a number of 'x' characters to ensure that
-            the next character fits on a 'bytes' boundary.
-        """
-        n = struct.calcsize(string) % fbytes
-        if n == 0:
-                return ""
-        return 'x' * (fbytes - n)
+        decoder = RadioTapDecoder()
+        decoder.decode(rtap)
+        return decoder.defined_fields
 
     def parseFrame(self, frame, ARP=False):
         """
@@ -764,7 +904,7 @@ class Parse80211:
                 self.mangled = True
                 self.mangledcount += 1
             else:
-                freq = self.rtapData[3] & 0xFFFF
+                freq = self.rtapData[3][0]
             if "channel" not in self.IE.tagdata.keys():
                 if "htPriCH" in self.IE.tagdata.keys():
                     # get channel from HT ie tag
