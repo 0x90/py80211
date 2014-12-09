@@ -598,8 +598,8 @@ class Parse80211:
             10: self.deauthDisass,  # disassoication
             11: self.placedef,  # authentication
             12: self.deauthDisass,  # deauthentication
-            }, 1:{},  # control frames
-            2:{  # data frames
+            }, 1: {},  # control frames
+            2: {  # data frames
              0: self.fdata,  # data
              1: self.fdata,  # data + CF-ack
              2: self.fdata,  # data + CF-poll
