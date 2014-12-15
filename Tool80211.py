@@ -499,6 +499,7 @@ class Airview(threading.Thread):
             ap_object.addClients(clientmac)
             if aprssi is not None:
                 ap_object.rssi = aprssi
+            ap_object.update_packet_counter()
 
     def parse(self):
         """
@@ -528,6 +529,8 @@ class Airview(threading.Thread):
                     # create new object
                     self.apObjects[bssid] = accessPoint(bssid)
                 ap_object = self.apObjects[bssid]
+                # update packet count
+                ap_object.update_packet_counter()
                 # populate rssi
                 ap_object.rssi = frame["rssi"]
                 # update essid
@@ -586,6 +589,8 @@ class Airview(threading.Thread):
                 if src not in self.clientObjects.keys(): 
                     self.clientObjects[clientmac] = client(src)
                 client_obj = self.clientObjects[src]
+                # update client packet counter
+                client_obj.update_packet_counter()
                 client_obj.rssi = frame['rssi']
                 client_obj.updateProbes(essid)
                 if client_obj.bssid is None:
