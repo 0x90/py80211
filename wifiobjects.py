@@ -58,8 +58,20 @@ class accessPoint:
             140, 149, 153, 157, 161, 165) # 5ghz channel list
         self.twofourghzChannels = range(1, 15) # 2.4ghz channel list
         self.bcast = False          # used for airdrop, bcast kick packets are not allowed by default
+        self._pcounter = 0
 
-    
+    def update_packet_counter(self):
+        """
+        update the number of packets we have seen for a given AP
+        """
+        self._pcounter += 1
+
+    def get_packet_counter(self):
+        """
+        Return the packet counter
+        """
+        return self._pcounter
+
     def updaterates(self, rates):
         """
         add rates / extended rates
@@ -177,7 +189,20 @@ class client:
         self.oui = self.populateOUI() # populate clients oui lookup
         self.rssi = None              # client rssi
         self.apObject = None          # stores reference link to ap object when connected to bssid
-        
+        self._pcounter = 0
+
+    def update_packet_counter(self):
+        """
+        update the number of packets we have seen for a given client device
+        """
+        self._pcounter += 1
+
+    def get_packet_counter(self):
+        """
+        Return the packet counter
+        """
+        return self._pcounter
+
     def populateOUI(self):
         """
         populate the OUI vars for the object
